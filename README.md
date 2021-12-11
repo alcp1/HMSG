@@ -355,11 +355,11 @@ This section handles modules that send the frame type "0x302" for their status:
 
 Fields needed for setup:
     
-| Field               | Description                               | Possible Values                |
-| :---                | :---                                      | :---                           |
-| node                | HAPCAN module / node                      | *Number* from **1** to **255** |
-| group               | HAPCAN group number                       | *Number* from **1** to **255** |
-| relays              | JSON Array - one element for each channel | *JSON String*                  |
+| Field                | Description                               | Possible Values                |
+| :---                 | :---                                      | :---                           |
+| node                 | HAPCAN module / node                      | *Number* from **1** to **255** |
+| group                | HAPCAN group number                       | *Number* from **1** to **255** |
+| relays               | JSON Array - one element for each channel | *JSON String*                  |
 | -   relays[].channel | Channel Number (1 to 6)                   | *Number* from **1** to **6**   |
 | -   relays[].state   | MQTT State Topic                          | *String* of MQTT State Topic   |
 | -   relays[].command | MQTT Command Topic                        | *String* of MQTT Command Topic |
@@ -661,4 +661,147 @@ The following are the Payloads sent to the STATUS when the module sends a *BUTTO
 | :---                         | :---         | 
 | LED \ Button channel is ON   | `"ON"`       | 
 | LED \ Button channel is OFF  | `"OFF"`      | 
+
+### STATUS Payload - Temperature sensor
+
+The following is the Payload sent to the STATUS topic when the module sends a *TEMPERATURE* message on the CAN Bus (as a *JSON String*):
+| Status                                  | MQTT Payload                                                         | 
+| :---                                    | :---                                                                 | 
+| Temperature / Thermostat / Hysteresis   | `"{"Temperature": Float, "Thermostat": Float, "Hysteresis": Float}"` | 
+
+### STATUS Payload - Thermostat
+
+The following is the Payload sent to the STATUS topic when the module sends a *THERMOSTAT* message on the CAN Bus (as a *JSON String*):
+| Status       | MQTT Payload                                               | 
+| :---         | :---                                                       | 
+| Thermostat   | `"{"Position": Integer, "State": String ("ON" or "OFF")}"` | 
+
+### STATUS Payload - Temperature Controller
+
+The following is the Payload sent to the STATUS topic when the module sends a *TEMPERATURE CONTROLLER* message on the CAN Bus (as a *JSON String*):
+| Status                   | MQTT Payload                                               | 
+| :---                     | :---                                                       | 
+| Temperature Controller   | `"{"HeatState": String ("ON" or "OFF"), "HeatValue": Integer, "CoolState": String ("ON" or "OFF"), "CoolValue": Integer, "ControlState": String ("ON" or "OFF")}"` | 
+
+## Section "HAPCANRGBs"
+
+This section handles modules that send the frame type "0x308" for their status:
+    
+### JSON Setup:
+
+Fields needed for setup:
+    
+| Field                | Description                               | Possible Values                   |
+| :---                 | :---                                      | :---                              |
+| node                 | HAPCAN module / node                      | *Number* from **1** to **255**    |
+| group                | HAPCAN group number                       | *Number* from **1** to **255**    |
+| isRGB                | RGB or Individual channels                | *Boolean* (**true** or **false**) |
+| rgb                  | JSON Array - one element for each channel | *JSON String*                     |
+| -   rgb[].channel    | Channel Number (1 to 4)                   | *Number* from **1** to **4**      |
+| -   rgb[].state      | MQTT State Topic                          | *String* of MQTT State Topic      |
+| -   rgb[].command    | MQTT Command Topic                        | *String* of MQTT Command Topic    |
+
+**REMARK:** When the field "isRGB" is true, the field rgb[].channel is optional, otherwise, it is mandatory if rgb[].state or rgb[].command are set.
+
+<details><summary>Example 1 - JSON String (exerpt) - Single Channel Configuration </summary>
+<p>
+     
+When isRGB field is false, each channel can be configured with independent MQTT status / command topics. Here is an example:
+     
+``` json
+{
+  "node": 32,
+  "group": 32,
+  "isRGB": false,
+  "rgb": [
+    {
+      "channel": 1,
+      "state": "MyRootTopic/CANOut/PWM1",
+      "command": "MyRootTopic/CANIn/PWM1/set"
+    },
+    {
+      "channel": 2,
+      "state": "MyRootTopic/CANOut/PWM2",
+      "command": "MyRootTopic/CANIn/PWM2/set"
+    },
+    {
+      "channel": 3,
+      "state": "MyRootTopic/CANOut/PWM3",
+      "command": "MyRootTopic/CANIn/PWM4/set"
+    },
+    {
+      "channel": 4,
+      "state": "MyRootTopic/CANOut/PWM4",
+      "command": "MyRootTopic/CANIn/PWM4/set"
+    }
+  ]
+}
+````
+     
+</p>
+</details>
+
+<details><summary>Example 2 - JSON String (exerpt) - RGB mode </summary>
+<p>
+
+When the field isRGB is true, all four channels (R, G, B and MASTER) are considered as one single entity, therefore, just a single status and a single command topics are configurable. Here is an example: 
+
+``` json
+{
+  "node": 64,
+  "group": 64,
+  "isRGB": true,
+  "rgb": [
+    {
+      "state": "MyRootTopic/CANOut/RGB1",
+      "command": "MyRootTopic/CANIn/RGB1/set"
+    }
+  ]
+}
+````
+
+</p>
+</details>
+    
+### COMMAND Payloads - isRGB is true
+
+The following are the acceptable Payloads for modules configured with isRGB as true when receiving a message on the command topic (all are strings):
+
+| Payload                | Action (all are sent with direct control frame 0x10A)                                 | 
+| :---                   | :---                                                                                  | 
+| `ON`                   | Turn the RGB channel output ON softly and immediately                                 | 
+| `OFF`                  | Turn the RGB channel output OFF softly and immediately                                | 
+| `TOGGLE`               | Toggle the RGB channel output immediately                                             | 
+| `String as Number`     | Set the RGB channel output softly and immediately with the value received as a number | 
+
+**REMARK:** For the `String as Number` payload, the acceptable range is from "0" to "255".
+
+### COMMAND Payloads - isRGB is false
+
+The following are the acceptable Payloads for modules configured with isRGB as false when receiving a message on the command topic (all are strings):
+
+| Payload                                      | Action (all are sent with direct control frame 0x10A)                                     | 
+| :---                                         | :---                                                                                      | 
+| `ON`                                         | Turn the RGB channels and MASTER channel to ON softly and immediately                     | 
+| `OFF`                                        | Turn the RGB channels and MASTER channel to OFF softly and immediately                    | 
+| `TOGGLE`                                     | Toggle the RGB Master channel immediately                                                 | 
+| `String as Number (comma-separated values)`  | Turn the RGB channels and MASTER channel according to the numbers, softly and immediately | 
+| `{"INSTR1":Integer, "INSTR2":Integer, "INSTR3":Integer, "INSTR4":Integer, "INSTR5":Integer, "INSTR6":Integer}`  | Send the INSTR fields to the RGB module |
+
+**REMARK:** For each channell, the `String as Number` payload, the acceptable range is from "0" to "255".
+
+### STATUS Payloads
+
+The following is the Payload sent to the STATUS topic when the module sends a RGB message on the CAN Bus (all are strings):
+
+| Status                              | MQTT Payload                                          | 
+| :---                                | :---                                                  | 
+| RGB Channel changes, isRGB is false | `String as Number - Integer`                          | 
+| RGB Channel changes, isRGB is true  | `String as Number (comma-separated values) - Integer` |
+
+**REMARK:** The status for each channel is defined as the output value from 0 to 255 when isRGB is false. Otherwise, for each channel, the calculation is *channel x Master / 256* as an integer from 0 to 255.
+
+
+
+
 
