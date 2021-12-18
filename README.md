@@ -196,7 +196,7 @@ At this point you should be able to read and write messages to the CAN Bus using
     Type=idle
     
     User=pi
-    ExecStart= /home/pi/HMSG/HMSG
+    ExecStart= /home/pi/HMSG/SW/HMSG
     
     Restart=always
     RestartSec=40
