@@ -1,0 +1,24 @@
+{
+    "editor.rulers": [
+        80
+    ],
+    "makefile.configurations": [
+        {
+            "name": "Default",
+            "makeArgs": []
+        },
+        {
+            "name": "Clean",
+            "makeArgs": [
+                "clean"
+            ]
+        }
+    ],
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/pi/HMSG/SW",
+            "binaryPath": "/home/pi/HMSG/SW/HMSG",
+            "binaryArgs": []
+        }
+    ]
+}
