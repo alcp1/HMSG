@@ -6,6 +6,12 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 18/Jun/2023 |                               | ALCP             //
+// - Add new frame types (HTIM and HRGBW)                                     //
+//----------------------------------------------------------------------------//
+//  1.02     | 27/Jun/2023 |                               | ALCP             //
+// - Add Build Version Debug                                                  //
+//----------------------------------------------------------------------------//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,6 +30,7 @@
 #include "hapcanconfig.h"
 #include "hapcanmqtt.h"
 #include "hapcanrgb.h"
+#include "hrgbw.h"
 #include "hapcansocket.h"
 #include "hapcansystem.h"
 #include "manager.h"
@@ -609,6 +616,7 @@ void* managerHandleHAPCANPeriodic(void *arg)
                     // Error is handled within the functions
                     hsystem_periodic();
                     hrgb_periodic();
+                    hrgbw_periodic();
                 }                
             }
         }
@@ -662,6 +670,13 @@ void managerInit(void)
 {    
     int li_index;
     int li_check;
+
+    /**************************************************************************
+     * Build date
+     *************************************************************************/
+    #ifdef DEBUG_VERSION
+    debug_print("HMSG Start! Build date/time = %s - %s\n", __DATE__, __TIME__);
+    #endif
     /**************************************************************************
      * INIT CONFIG AND GATEWAY
      *************************************************************************/

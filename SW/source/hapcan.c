@@ -6,6 +6,9 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 18/Jun/2023 |                               | ALCP             //
+// - Add new frame types (HTIM and HRGBW)                                     //
+//----------------------------------------------------------------------------//
 
 /*
 * Includes
@@ -31,6 +34,8 @@
 #include "hapcansocket.h"
 #include "hapcansystem.h"
 #include "hapcantemperature.h"
+#include "hrgbw.h"
+#include "htim.h"
 #include "jsonhandler.h"
 #include "mqtt.h"
 #include "mqttbuf.h"
@@ -65,6 +70,9 @@ static int handleConfiguredFromMQTT(char* topic, void* payload, int payloadlen,
         unsigned long long timestamp);
 static int getModuleResponseFromMQTT(hapcanCANData *hd_result, char* topic, 
         void* payload, int payloadlen, unsigned long long timestamp);
+#ifdef DEBUG_HAPCAN_CAN2MQTT
+static void printDebugReturn(int ret);
+#endif
 
 /*
  * Send the RAW MQTT response for a HAPCAN message
@@ -156,7 +164,8 @@ static int handleConfiguredFromCAN(hapcanCANData* hapcanData,
                 ret = getModuleResponseFromCAN(topic, hapcanData, 
                         timestamp);
                 #ifdef DEBUG_HAPCAN_CAN2MQTT
-                debug_print("handleConfiguredFromCAN - Response = %d\n", ret);
+                debug_print("handleConfiguredFromCAN - Response: \n");
+                printDebugReturn(ret);
                 #endif
                 if(ret != HAPCAN_MQTT_RESPONSE_ERROR)
                 {
@@ -231,6 +240,14 @@ static int getModuleResponseFromCAN(char *state_str, hapcanCANData *hd_received,
             break;
         case HAPCAN_RGB_FRAME_TYPE:
             ret = hrgb_setCAN2MQTTResponse(state_str, hd_received, 
+                    timestamp);
+            break;
+        case HAPCAN_RGBW_FRAME_TYPE:
+            ret = hrgbw_setCAN2MQTTResponse(state_str, hd_received, 
+                    timestamp);
+            break;
+        case HAPCAN_MULTIPLE_TEMPERATURE_FRAME_TYPE:
+            ret = htim_setCAN2MQTTResponse(state_str, hd_received, 
                     timestamp);
             break;
         default:
@@ -324,7 +341,8 @@ static int handleConfiguredFromMQTT(char* topic, void* payload, int payloadlen,
                 ret = getModuleResponseFromMQTT(&hapcanResult, topic, payload, 
                         payloadlen, timestamp);
                 #ifdef DEBUG_HAPCAN_MQTT2CAN
-                debug_print("handleConfiguredFromMQTT: Response is %d\n", ret);
+                debug_print("handleConfiguredFromMQTT: Response: \n");
+                printDebugReturn(ret);
                 #endif
                 if(ret != HAPCAN_CAN_RESPONSE_ERROR)
                 {
@@ -400,11 +418,53 @@ static int getModuleResponseFromMQTT(hapcanCANData *hd_result, char* topic,
             ret = hrgb_setMQTT2CANResponse(hd_result, payload, payloadlen, 
                     timestamp);
             break;
+        case HAPCAN_RGBW_FRAME_TYPE:
+            ret = hrgbw_setMQTT2CANResponse(hd_result, payload, payloadlen, 
+                    timestamp);
+            break;
+        case HAPCAN_MULTIPLE_TEMPERATURE_FRAME_TYPE:
+            ret = htim_setMQTT2CANResponse(hd_result, payload, payloadlen, 
+                    timestamp);
+            break;
         default:
             break;
     }
     return ret;
 }
+
+// Debugs return from calls
+#ifdef DEBUG_HAPCAN_CAN2MQTT
+static void printDebugReturn(int ret)
+{    
+    switch(ret)
+    {
+        case HAPCAN_GENERIC_OK_RESPONSE:
+            debug_print(" - HAPCAN_GENERIC_OK_RESPONSE\n");
+            break;
+        case HAPCAN_NO_RESPONSE:
+            debug_print(" - HAPCAN_NO_RESPONSE\n");
+            break;
+        case HAPCAN_SOCKET_RESPONSE:
+            debug_print(" - HAPCAN_SOCKET_RESPONSE\n");
+            break;
+        case HAPCAN_MQTT_RESPONSE:
+            debug_print(" - HAPCAN_MQTT_RESPONSE\n");
+            break;
+        case HAPCAN_CAN_RESPONSE:
+            debug_print(" - HAPCAN_CAN_RESPONSE\n");
+            break;
+        case HAPCAN_RESPONSE_ERROR:
+            debug_print(" - HAPCAN_RESPONSE_ERROR\n");
+            break;
+        case HAPCAN_MQTT_RESPONSE_ERROR:
+            debug_print(" - HAPCAN_MQTT_RESPONSE_ERROR\n");
+            break;
+        case HAPCAN_CAN_RESPONSE_ERROR:
+            debug_print(" - HAPCAN_CAN_RESPONSE_ERROR\n");
+            break;
+    }
+}
+#endif
 
 //----------------------------------------------------------------------------//
 // EXTERNAL FUNCTIONS
@@ -597,6 +657,8 @@ void hapcan_initGateway(void)
     hbutton_addToGateway(); 
     htemp_addToGateway();
     hrgb_addToGateway();
+    hrgbw_addToGateway();
+    htim_addToGateway();
 }
 
 /**

@@ -6,6 +6,9 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 18/Jun/2023 |                               | ALCP             //
+// - Add new frame types (HTIM and HRGBW)                                     //
+//----------------------------------------------------------------------------//
 
 #ifndef HAPCAN_H
 #define HAPCAN_H
@@ -43,6 +46,8 @@ enum
 #define HAPCAN_MAX_RESPONSES 2
 // FRAMES
 // Normal Messages - Application frames handled by the functional firmware
+#define HAPCAN_RGBW_FRAME_TYPE                  0x318
+#define HAPCAN_MULTIPLE_TEMPERATURE_FRAME_TYPE  0x314
 #define HAPCAN_OPEN_COLLECTOR_FRAME_TYPE        0x309
 #define HAPCAN_RGB_FRAME_TYPE                   0x308
 #define HAPCAN_BLINDS_FRAME_TYPE                0x307
