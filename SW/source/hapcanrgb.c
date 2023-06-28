@@ -9,9 +9,6 @@
 //  1.01     | 21/Dec/2021 |                               | ALCP             //
 // - Fix the messages sent to the CAN Bus after receiving RGB MQTT messages   //
 //----------------------------------------------------------------------------//
-//  1.10     | 27/Jun/2023 |                               | ALCP             //
-// - New module version - baseed on new RGB module                           //
-//----------------------------------------------------------------------------//
 
 /*
 * Includes
@@ -1349,22 +1346,22 @@ int hrgb_setMQTT2CANResponse(hapcanCANData *hd_result, void *payload,
             {
                 // Set the output to the specified level                                
                 valid = true;
-                // Set all rgb softly to the specified level
-                hd_result->data[0] = 0x21; // INSTR1 (SET SOFTLY rgb TO)
-                hd_result->data[1] = colors[RGB_COLOUR_R]; // INSTR2=State1
-                hd_result->data[4] = colors[RGB_COLOUR_G]; // INSTR3=State2
-                hd_result->data[5] = colors[RGB_COLOUR_B]; // INSTR4=State3
-                hd_result->data[6] = 0x00; // INSTR5 = TIMER
+                // Set all RGB softly to the specified level
+                hd_result->data[0] = 0x21; // INSTR1.
+                hd_result->data[1] = colors[RGB_COLOUR_R]; // INSTR2=STATE1
+                hd_result->data[4] = colors[RGB_COLOUR_G]; // INSTR3=STATE2
+                hd_result->data[5] = colors[RGB_COLOUR_B]; // INSTR4=STATE3
+                hd_result->data[6] = 0x00; // INSTR5 = TIMER   
                 hd_result->data[7] = 0xFF; // INSTR6 = 0xXX
                 ret = hapcan_addToCANWriteBuffer(hd_result, timestamp, true);
                 if(ret != HAPCAN_CAN_RESPONSE_ERROR)                    
                 {
                     // Set MASTER to 0xFF immediately;
-                    hd_result->data[0] = 0x03; // INSTR1 (SET MASTER TO)
-                    hd_result->data[1] = 0xFF; // INSTR2 = State (255)
-                    hd_result->data[4] = 0x00; // INSTR3 = Timer
+                    hd_result->data[0] = 0x03; // INSTR1.
+                    hd_result->data[1] = 0xFF; // INSTR2 = State.
+                    hd_result->data[4] = 0x00; // INSTR3 = Timer.
                     hd_result->data[5] = 0xFF; // INSTR4 = 0xXX
-                    hd_result->data[6] = 0xFF; // INSTR5 = 0xXX
+                    hd_result->data[6] = 0xFF; // INSTR5 = 0xXX   
                     hd_result->data[7] = 0xFF; // INSTR6 = 0xXX                    
                     ret = hapcan_addToCANWriteBuffer(hd_result, timestamp, 
                             true);
