@@ -1,4 +1,5 @@
-{"GeneralSettings":
+{
+"GeneralSettings":
 {
 "computerID1": 254,
 "computerID2": 254,
@@ -6,14 +7,14 @@
 "enableSocketServer": true,
 "socketServerPort": "33556",
 "enableMQTT": true,
-"mqttBroker": "192.168.0.32",
-"mqttClientID": "RPiTest14",
+"mqttBroker": "192.168.0.28",
+"mqttClientID": "RPiTest17",
 "subscribeTopics":
 [
 "MyRootTopic/CANIn",
 "MyRootTopic/CANIn/#"
 ],
-"enableRawHapcan": true,
+"enableRawHapcan": false,
 "rawHapcanPubTopic": "MyRootTopic/CANOut",
 "rawHapcanSubTopic": "MyRootTopic/CANIn",
 "enableHapcanStatus": true,
@@ -33,7 +34,17 @@
 ],
 "HAPCANRGBs":
 [
-{"node":32, "group":32, "isRGB":false, "rgb":[{"channel":1, "state":"MyRootTopic/CANOut/PWM1", "command":"MyRootTopic/CANIn/PWM1/set"}]},
-{"node":64, "group":64, "isRGB":true, "rgb":[{"state":"MyRootTopic/CANOut/RGB1", "command":"MyRootTopic/CANIn/RGB1/set"}]}
+{"node":45, "group":1, "isRGB":false, "rgb":[{"channel":1, "state":"MyRootTopic/CANOut/PWM1", "command":"MyRootTopic/CANIn/PWM1/set"}, {"channel":2, "state":"MyRootTopic/CANOut/PWM2", "command":"MyRootTopic/CANIn/PWM2/set"}, {"channel":3, "state":"MyRootTopic/CANOut/PWM3", "command":"MyRootTopic/CANIn/PWM3/set"}]},
+{"node":4, "group":1, "isRGB":true, "rgb":[{"state":"MyRootTopic/CANOut/RGB1", "command":"MyRootTopic/CANIn/RGB1/set"}]}
+],
+"RGBWs":
+[
+{"node":2, "group":1, "isRGBW":false, "isRGB":true, "rgb":[{"state":"MyRootTopic/CANOut/RGB1", "command":"MyRootTopic/CANIn/RGB1/set"}], "rgbw":[{"channel": 4, "state":"MyRootTopic/CANOut/RGBW4", "command":"MyRootTopic/CANIn/RGBW4/set"}]},
+{"node":26,"group":1,"isRGBW":false,"isRGB":false,"rgbw":[{"channel":1,"state":"MyRootTopic/CANOut/RGBW1","command":"MyRootTopic/CANIn/RGBW1/set"},{"channel":2,"state":"MyRootTopic/CANOut/RGBW2","command":"MyRootTopic/CANIn/RGBW2/set"},{"channel":3,"state":"MyRootTopic/CANOut/RGBW3","command":"MyRootTopic/CANIn/RGBW3/set"},{"channel":4,"state":"MyRootTopic/CANOut/RGBW4","command":"MyRootTopic/CANIn/RGBW4/set"}]},
+{"node":27, "group":1, "isRGBW":true, "isRGB":false, "rgbw":[{"state":"MyRootTopic/CANOut/RGBW", "command":"MyRootTopic/CANIn/RGBW/set"}]}
+],
+"TIMs":
+[
+{"node": 1, "group": 1, "temperature": [{"channel": 1, "temperatureState": "MyRootTopic/CANOut/TempSensor1TempState", "thermostatState": "MyRootTopic/CANOut/TempSensor1ThermState", "thermostatCommand": "MyRootTopic/CANIn/TempSensor1ThermComm", "errorState": "MyRootTopic/CANOut/TempSensor1ErrState"},{"channel": 2, "temperatureState": "MyRootTopic/CANOut/TempSensor2TempState", "thermostatState": "MyRootTopic/CANOut/TempSensor2ThermState", "thermostatCommand": "MyRootTopic/CANIn/TempSensor2ThermComm", "errorState": "MyRootTopic/CANOut/TempSensor2ErrState"},{"channel": 3, "temperatureState": "MyRootTopic/CANOut/TempSensor3TempState", "thermostatState": "MyRootTopic/CANOut/TempSensor3ThermState", "thermostatCommand": "MyRootTopic/CANIn/TempSensor3ThermComm", "errorState": "MyRootTopic/CANOut/TempSensor3ErrState"},{"channel": 4, "temperatureState": "MyRootTopic/CANOut/TempSensor4TempState", "thermostatState": "MyRootTopic/CANOut/TempSensor4ThermState", "thermostatCommand": "MyRootTopic/CANIn/TempSensor4ThermComm", "errorState": "MyRootTopic/CANOut/TempSensor4ErrState"}],"irCommand": "MyRootTopic/CANOut/IRCommand"}
 ]
 }
