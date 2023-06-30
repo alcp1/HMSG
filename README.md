@@ -9,13 +9,7 @@ The HAPCAN - MQTT - Socket Gateway (or **HMSG** for short) was originally though
 This way, the HAPCAN integration with Home automation platforms, such as Home Assistant or OpenHAB through MQTT would be easier.
 
 # Hardware
-The goal is to create a HAPCAN HAT for the Raspberry Pi. At the moment, HW development hasn't started.
-Basically, it would contain the following blocks:
- * Connector: The Ethernet connector (x2) for the HAPCAN Bus Connection
- * DC-DC converter: To supply the Raspberry Pi and the HAT with 5V
- * CAN Transceiver
- * CAN Controller: For socketCAN compatibility with linux.
-
+The goal is to use a HAPCAN HAT for the Raspberry Pi.
 For the current tests, two third-party Raspberry Pi HATs were used:
  * https://www.waveshare.com/wiki/RS485_CAN_HAT
  * https://www.elektor.com/pican-2-duo-can-bus-board-for-raspberry-pi-2-3
@@ -28,24 +22,27 @@ As with any HAT, it is attached to the Raspberry Pi. The HATs used during the �
 The following steps are needed to setup and configure the Raspberry Pi to run the **HMSG** software:
 
 ## Initial Raspberry Pi setup
- * STEP 1: Flash the Raspberry Pi with the latest version “Raspberry Pi OS Lite”.
- * STEP 2: Connect the Raspberry Pi to a Monitor and a Keyboard (only needed for the initial configuration).
- * STEP 3: Power up the Raspberry Pi.
- * STEP 4: Login (default user: *pi* / default password: *raspberry*)
- * STEP 5: Run config tool: 
+ * STEP 1: Install "Raspberry Pi Imager"
+ * STEP 2: Open the program, and click on "CHOOSE OS". Select "Raspberry Pi OS (other)" and then “Raspberry Pi OS Lite (32-bit)".
+ * STEP 3: Click on the gear icon for advanced options.
+ * STEP 4: Configure remote access with SSH:
+     - Setup hostname (to find the device on the network)
+     - Enable SSH
+     - Set username and password
+     - Click on "Save"
+ * STEP 5: Choose the storage, and then Write. 
+ * STEP 6: Power the raspberry pi with the flashed sd card. At this point you can run a SSH client (for example, PuTTY) on your computer, and login to the Raspberry Pi remotely (using the username and password configured above).
+ * STEP 7: On the command line, run config tool: 
      ```
      sudo raspi-config
      ```
- * STEP 6: Inside the config tool, configure the following items:
-    * Localisation Options (for keyboard / timezone)
-    * System Options > Password (for secutiry) 
-    * Interface Options > (Enable SSH Server)
+ * STEP 8: Inside the config tool, configure the following items:
     * Advanced Options > Expand Filesystem
  * STEP 7: Reboot
     ```
     sudo reboot
     ```
- * STEP 8: Setup the network options.
+ * STEP 8: Setup the network options (optional).
     ```
     sudo nano /etc/dhcpcd.conf
     ```
@@ -53,7 +50,6 @@ The following steps are needed to setup and configure the Raspberry Pi to run th
     ```
     sudo reboot
     ```
-**REMARK:** At this point you do not need the keyboard or the monitor. You can run a SSH client (for example, PuTTY) on your computer, and login to the Raspberry Pi remotely.
 ## Installing dependencies
 ### Install git
 ```
