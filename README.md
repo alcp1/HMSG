@@ -148,20 +148,21 @@ At this point you should be able to read and write messages to the CAN Bus using
     ```
     cd /home/pi
     ```
+    **REMARK:** It is considered that the user is "pi". If not, the folder should be /home/_username_.
 * STEP 2: Get files from github
     ```
     git clone https://github.com/alcp1/HMSG
     ```
-* STEP 5: Compile and Install
+* STEP 3: Compile and Install
     ```
     cd /home/pi/HMSG/SW
     sudo make all
     ```
-* STEP 6: Update the configuration file /home/pi/HMSG/SW/config.json 
+* STEP 4: Update the configuration file /home/pi/HMSG/SW/config.json 
     
     **REMARK:** See the section "Configuration file" below for details on how to update the file.
     
-* STEP 7: Run the program
+* STEP 5: Run the program
     ```
     sudo /home/pi/HMSG/SW/HMSG
     ```
