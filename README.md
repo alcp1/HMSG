@@ -166,24 +166,6 @@ At this point you should be able to read and write messages to the CAN Bus using
     ```
     sudo /home/pi/HMSG/SW/HMSG
     ```
-# Additional resources:
-## socketCAN:
- * https://en.wikipedia.org/wiki/SocketCAN
- * https://elinux.org/CAN_Bus
-
-## Flashing Raspberry Pi:
- * https://www.raspberrypi.org/downloads/
-
-## Disbaling Wi-Fi and Bluetooth (for saving a few mA)
-* STEP 1: Edit config file:
-    ```
-    sudo nano /boot/config.txt
-    ```
-* STEP 2: Add the following lines to the file: 
-    ```
-    dtoverlay=disable-wifi
-    dtoverlay=disable-bt
-    ```
 ## Running the HMSG program at startup and automatically restarting it
 * STEP 1: Create a service:
     ```
@@ -207,11 +189,60 @@ At this point you should be able to read and write messages to the CAN Bus using
     [Install]
     WantedBy=multi-user.target
     ```
+##REMARK:## If the user is not pi, this file has to be updated with the correct user and folder.
 * STEP 3: Enable the Service:
     ```
     sudo systemctl daemon-reload
     sudo systemctl enable hmsg.service
     ```
+# Additional resources:
+## Valgrind Install (for memory leak tests):
+It is needed to make from source (apt-get valgrind will install an older version which dows not work).
+* STEP 1: Uninstall the non working valgrind version if needed with root rights (eg. sudo):
+     ```
+     sudo apt-get --purge valgrind
+     ```
+* STEP 2: Identify the latest version (for example 3.18.1)
+* STEP 3: Download sources:
+     ```
+     sudo wget https://sourceware.org/pub/valgrind/valgrind-3.18.1.tar.bz2
+     ```
+* STEP 4: Decompress archive
+     ```
+     sudo tar xvf valgrind-3.18.1.tar.bz2
+     ```
+* STEP 5: Go to uncompressed archive
+     ```
+     cd valgrind-3.18.1
+     ```
+* STEP 6: Configure
+     ```
+     sudo ./configure
+     ```
+* STEP 7: Compile
+     ```
+     sudo make
+     ```
+* STEP 8: Install
+     ```
+     sudo make install
+     ```
+## Disabling Wi-Fi and Bluetooth (for saving a few mA)
+* STEP 1: Edit config file:
+    ```
+    sudo nano /boot/config.txt
+    ```
+* STEP 2: Add the following lines to the file: 
+    ```
+    dtoverlay=disable-wifi
+    dtoverlay=disable-bt
+    ```
+## socketCAN:
+ * https://en.wikipedia.org/wiki/SocketCAN
+ * https://elinux.org/CAN_Bus
+
+## Flashing Raspberry Pi:
+ * https://www.raspberrypi.com/software/
 
 ## CAN Utils - HAPCAN AND CAN Messages
 For initial tests, you can use CAN Utils.
