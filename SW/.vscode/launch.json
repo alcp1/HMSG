@@ -8,7 +8,7 @@
             "program": "/home/pi/HMSG/SW/HMSG",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
