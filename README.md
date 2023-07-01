@@ -1063,6 +1063,57 @@ To debug the HMSG program using VS Code, use the steps below:
 To **build** the project, select the “Makefile” button on the left panel, and press “Makefile: Build the current target”.
 To **debug** the project, go to “Run and Debug” button on the left panel, and select (gdb) Launch.
 
+## Github integration
+To commit the changes from the raspberry pi to github:
+* Step 1: From de SW folder, edit the git config file:
+```
+sudo nano ../.git/config
+```
+* Step 2: Add the git credentials to the endo of the file. Example (use the appropriate user and email):
+```
+[user]
+ name = example
+ email = example@gmail.com
+```
+
+## Useful terminal commands:
+```
+sudo systemctl status hmsg.service
+```
+```
+sudo tail -f /var/log/syslog -n 50 | more
+```
+```
+sudo grep -i 'HMSG' /var/log/syslog
+```
+```
+sudo vcgencmd measure_temp
+```
+```
+top
+```
+```
+sudo date
+```
+```
+sudo uptime
+```
+```
+raspi-gpio get prints the state of all GPIO pins
+```
+```
+raspi-gpio get X prints the state of GPIO pin X
+```
+```
+raspi-gpio set X op sets GPIO pin X as an output
+```
+```
+raspi-gpio set X dh sets GPIO pin X to drive high
+```
+```
+raspi-gpio set X dl sets GPIO pin X to drive low
+```
+
 ## Valgrind Install (for memory leak tests):
 It is needed to make from source (apt-get valgrind will install an older version which dows not work).
 * PRE-BUILD 1: Uninstall the non working valgrind version (OPTIONAL - only if previously installed):
