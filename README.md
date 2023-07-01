@@ -189,7 +189,7 @@ At this point you should be able to read and write messages to the CAN Bus using
     [Install]
     WantedBy=multi-user.target
     ```
-##REMARK:## If the user is not pi, this file has to be updated with the correct user and folder.
+**REMARK:** If the user is not pi, this file has to be updated with the correct user and folder.
 * STEP 3: Enable the Service:
     ```
     sudo systemctl daemon-reload
@@ -198,35 +198,56 @@ At this point you should be able to read and write messages to the CAN Bus using
 # Additional resources:
 ## Valgrind Install (for memory leak tests):
 It is needed to make from source (apt-get valgrind will install an older version which dows not work).
-* STEP 1: Uninstall the non working valgrind version if needed with root rights (eg. sudo):
+* PRE-BUILD 1: Uninstall the non working valgrind version (OPTIONAL - only if previously installed):
      ```
      sudo apt-get --purge valgrind
      ```
-* STEP 2: Identify the latest version (for example 3.18.1)
-* STEP 3: Download sources:
+* PRE-BUILD 2: Force the 32-bit kernel (needed for raspberry pi 4):
      ```
-     sudo wget https://sourceware.org/pub/valgrind/valgrind-3.18.1.tar.bz2
+     sudo nano /boot/config.txt
      ```
-* STEP 4: Decompress archive
+     Add the following lines to the end:
      ```
-     sudo tar xvf valgrind-3.18.1.tar.bz2
+     arm_64bit=0
      ```
-* STEP 5: Go to uncompressed archive
+* PRE-BUILD 3: Install autoconf:
      ```
-     cd valgrind-3.18.1
+     sudo apt install autoconf 
      ```
-* STEP 6: Configure
+* STEP 1: Clone the code from GIT:
+     ```
+     git clone https://sourceware.org/git/valgrind.git
+     ```
+* STEP 2: Go into the source directory.
+     ```
+     cd ./valgrind
+     ```
+* STEP 3: Setup the environment
+     ```
+     sudo ./autogen.sh
+     ```
+* STEP 4: Configure
      ```
      sudo ./configure
      ```
-* STEP 7: Compile
+* STEP 5: Compile
      ```
      sudo make
      ```
-* STEP 8: Install
+* STEP 6: Install
      ```
      sudo make install
      ```
+* STEP 7: Check installation (there should be no complaints)
+     ```
+     valgrind ls -l
+     ```
+After valgrind is installed, in order to check for memory leaks, use the following command:
+```
+valgrind --leak-check=full --show-leak-kinds=all --leak-resolution=high --track-origins=yes ./HMSG  > log.txt 2>&1
+```
+**REMARK:** As the program has a lot of buffers, at the log, there will be messages for "still reachable" data. The best approach is to run the command line above twice, and compare the two logs generated to see if the reachable data is the same.
+
 ## Disabling Wi-Fi and Bluetooth (for saving a few mA)
 * STEP 1: Edit config file:
     ```
