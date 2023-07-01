@@ -9,13 +9,7 @@ The HAPCAN - MQTT - Socket Gateway (or **HMSG** for short) was originally though
 This way, the HAPCAN integration with Home automation platforms, such as Home Assistant or OpenHAB through MQTT would be easier.
 
 # Hardware
-The goal is to create a HAPCAN HAT for the Raspberry Pi. At the moment, HW development hasn't started.
-Basically, it would contain the following blocks:
- * Connector: The Ethernet connector (x2) for the HAPCAN Bus Connection
- * DC-DC converter: To supply the Raspberry Pi and the HAT with 5V
- * CAN Transceiver
- * CAN Controller: For socketCAN compatibility with linux.
-
+The goal is to use a HAPCAN HAT for the Raspberry Pi.
 For the current tests, two third-party Raspberry Pi HATs were used:
  * https://www.waveshare.com/wiki/RS485_CAN_HAT
  * https://www.elektor.com/pican-2-duo-can-bus-board-for-raspberry-pi-2-3
@@ -28,24 +22,27 @@ As with any HAT, it is attached to the Raspberry Pi. The HATs used during the �
 The following steps are needed to setup and configure the Raspberry Pi to run the **HMSG** software:
 
 ## Initial Raspberry Pi setup
- * STEP 1: Flash the Raspberry Pi with the latest version “Raspberry Pi OS Lite”.
- * STEP 2: Connect the Raspberry Pi to a Monitor and a Keyboard (only needed for the initial configuration).
- * STEP 3: Power up the Raspberry Pi.
- * STEP 4: Login (default user: *pi* / default password: *raspberry*)
- * STEP 5: Run config tool: 
+ * STEP 1: Install "Raspberry Pi Imager"
+ * STEP 2: Open the program, and click on "CHOOSE OS". Select "Raspberry Pi OS (other)" and then “Raspberry Pi OS Lite (32-bit)".
+ * STEP 3: Click on the gear icon for advanced options.
+ * STEP 4: Configure remote access with SSH:
+     - Setup hostname (to find the device on the network)
+     - Enable SSH
+     - Set username and password
+     - Click on "Save"
+ * STEP 5: Choose the storage, and then Write. 
+ * STEP 6: Power the raspberry pi with the flashed sd card. At this point you can run a SSH client (for example, PuTTY) on your computer, and login to the Raspberry Pi remotely (using the username and password configured above).
+ * STEP 7: On the command line, run config tool: 
      ```
      sudo raspi-config
      ```
- * STEP 6: Inside the config tool, configure the following items:
-    * Localisation Options (for keyboard / timezone)
-    * System Options > Password (for secutiry) 
-    * Interface Options > (Enable SSH Server)
+ * STEP 8: Inside the config tool, configure the following items:
     * Advanced Options > Expand Filesystem
  * STEP 7: Reboot
     ```
     sudo reboot
     ```
- * STEP 8: Setup the network options.
+ * STEP 8: Setup the network options (optional).
     ```
     sudo nano /etc/dhcpcd.conf
     ```
@@ -53,7 +50,6 @@ The following steps are needed to setup and configure the Raspberry Pi to run th
     ```
     sudo reboot
     ```
-**REMARK:** At this point you do not need the keyboard or the monitor. You can run a SSH client (for example, PuTTY) on your computer, and login to the Raspberry Pi remotely.
 ## Installing dependencies
 ### Install git
 ```
@@ -152,40 +148,23 @@ At this point you should be able to read and write messages to the CAN Bus using
     ```
     cd /home/pi
     ```
+    **REMARK:** It is considered that the user is "pi". If not, the folder should be /home/_username_.
 * STEP 2: Get files from github
     ```
     git clone https://github.com/alcp1/HMSG
     ```
-* STEP 5: Compile and Install
+* STEP 3: Compile and Install
     ```
     cd /home/pi/HMSG/SW
     sudo make all
     ```
-* STEP 6: Update the configuration file /home/pi/HMSG/SW/config.json 
+* STEP 4: Update the configuration file /home/pi/HMSG/SW/config.json 
     
-    **REMARK:** See the section "Configuration file" below for details on how to update the file.
+    **REMARK:** See the section [Configuration File](#configuration-file) below for details on how to update the file.
     
-* STEP 7: Run the program
+* STEP 5: Run the program
     ```
     sudo /home/pi/HMSG/SW/HMSG
-    ```
-# Additional resources:
-## socketCAN:
- * https://en.wikipedia.org/wiki/SocketCAN
- * https://elinux.org/CAN_Bus
-
-## Flashing Raspberry Pi:
- * https://www.raspberrypi.org/downloads/
-
-## Disbaling Wi-Fi and Bluetooth (for saving a few mA)
-* STEP 1: Edit config file:
-    ```
-    sudo nano /boot/config.txt
-    ```
-* STEP 2: Add the following lines to the file: 
-    ```
-    dtoverlay=disable-wifi
-    dtoverlay=disable-bt
     ```
 ## Running the HMSG program at startup and automatically restarting it
 * STEP 1: Create a service:
@@ -210,45 +189,15 @@ At this point you should be able to read and write messages to the CAN Bus using
     [Install]
     WantedBy=multi-user.target
     ```
+**REMARK:** If the user is not pi, this file has to be updated with the correct user and folder.
 * STEP 3: Enable the Service:
     ```
     sudo systemctl daemon-reload
     sudo systemctl enable hmsg.service
     ```
-
-## CAN Utils - HAPCAN AND CAN Messages
-For initial tests, you can use CAN Utils.
-* *Reading messages from CAN:*
-```
-sudo candump can0 -t A
-```
-* *Writing messages to the CAN Bus (example for Button Frame):*
-```
-cansend can0 0602DEED#FFFF0101FFFFFFFF
-```
-The example below is for a button module (UNIV 3.1.3.1) setup as MODULE 11 (0x0B) from GROUP 100 (0x64).
-When the button 13 is pressed, the CAN message sent by the module is:
-* CANID (32-bit / 4 Bytes): 0x06020B64
-* DATA (8 Bytes): 0xFF 0xFF 0x0D 0xFF 0x01 0xFF 0xFF 0xFF
-
-*Breaking down the message:*
-* CANID:
-    * Frametype (CANID bits 28 through 17): 0x301
-    * Flags (just one nibble): 0x0
-    * Module: 0x0B
-    * Group: 0x64
-* DATA:
-    * D2 (CHANNEL): 0x0D (13 in decimal)
-    * D3 (BUTTON):  0xFF (closed)
-    * D4 (LED):     0x01 (disabled)        
-
-When the button 13 is released, the CAN message sent by the module is:
-* CANID (32-bit / 4 Bytes): 0x06020B64
-* DATA (8 Bytes): 0xFF 0xFF 0x0D 0x00 0x01 0xFF 0xFF 0xFF
-
-It is the same as before, but D3 (BUTTON) is set to 0x00 (open).
-
 # Configuration file
+Here is how the file config.json can be configured:
+
 ## Section "GeneralSettings"
 In this section, it is possible to configure the following settings:
 * Configuration ID:
@@ -1064,3 +1013,153 @@ The following is the Payload sent to the STATUS topic (*errorState*) when the mo
 | Status       | MQTT Payload                                               | 
 | :---         | :---                                                       | 
 | Sensor Error | *Number* from **0** to **255**                             | 
+
+
+# Additional resources:
+Here are some *optional* installation that could be performed, and additional information on some of the aspects involved in the development of HMSG.
+
+## Visual Studio Code Debug
+To debug the HMSG program using VS Code, use the steps below:
+ * STEP 1: Install the extension on your PC:
+     - Remote - SSH (by Microsoft)
+     - Remote Development (by Microsoft)
+     - Remote Explorer (by Microsoft)
+ * STEP 2: Connect to the raspberry pi:
+    - On VS Code, go to File > New Window
+    - Go to Remote Explorer (button on the Activity Bar on the left)
+    - Under the Menu "REMOTE", select "SSH", and "New Remote" (the "+" sign).
+    - On the dialog box for "Enter SSH Connection Command", type the command below (using the correct user name and IP address of your raspberry pi):
+    ```
+    ssh pi@192.168.0.255
+    ```
+    - Select the SSH file you want to update
+    - A message "Host Added" will appear. Select "Connect"
+    - Select the platform (in this case, Linux)
+    - It will ask you to check the fingerprint of the connect devide. Select "Continue".
+    - The password for the raspberry pi user will be asked. Type it and continue.
+    - It will setup the VS Code server. Wait it to finish.
+    - On the initial page or the "File" menu, select "Open Folder...".
+    - Select the folder:
+        ```
+        /home/pi/HMSG/SW/
+        ```
+        **REMARK**: Use the appropriate user for the folder path (it may not be "pi").
+    - It will ask if you trust the authors of this folder. Check the box that you trust the parent folder authors, and press the "Yes, I trust the authors" button.
+    - It will ask say that a git repository was found. Select yes if you intend to develop using github.
+* STEP 3: Add the following extensions to the raspberry pi:
+    - C/C++ (by Microsoft)
+    - C/C++ Extension Pack (by Microsoft). It will install 
+    - Makefile Tools (by Microsoft)
+* Step 4: Update json files:
+    - Inside the folder .vscode, configure the files launch.json, settings.json and tasks.json (they are a part of the HMSG repository in github).
+    **REMARK**: Use the appropriate user for the folder path (it may not be "pi").
+* Step 5: Click on "Makefile" (button on the Activity Bar on the left) and configure the Makefile Options as follows:
+    - Configuration: [Default]
+    - Build target: [all]
+    - Launch target: [HMSG]
+    - Makefile: [Makefile]
+    - Make: [/usr/bin/make]
+
+To **build** the project, select the “Makefile” button on the left panel, and press “Makefile: Build the current target”.
+To **debug** the project, go to “Run and Debug” button on the left panel, and select (gdb) Launch.
+
+## Valgrind Install (for memory leak tests):
+It is needed to make from source (apt-get valgrind will install an older version which dows not work).
+* PRE-BUILD 1: Uninstall the non working valgrind version (OPTIONAL - only if previously installed):
+     ```
+     sudo apt-get --purge valgrind
+     ```
+* PRE-BUILD 2: Force the 32-bit kernel (needed for raspberry pi 4):
+     ```
+     sudo nano /boot/config.txt
+     ```
+     Add the following lines to the end:
+     ```
+     arm_64bit=0
+     ```
+* PRE-BUILD 3: Install autoconf:
+     ```
+     sudo apt install autoconf 
+     ```
+* STEP 1: Clone the code from GIT:
+     ```
+     git clone https://sourceware.org/git/valgrind.git
+     ```
+* STEP 2: Go into the source directory.
+     ```
+     cd ./valgrind
+     ```
+* STEP 3: Setup the environment
+     ```
+     sudo ./autogen.sh
+     ```
+* STEP 4: Configure
+     ```
+     sudo ./configure
+     ```
+* STEP 5: Compile
+     ```
+     sudo make
+     ```
+* STEP 6: Install
+     ```
+     sudo make install
+     ```
+* STEP 7: Check installation (there should be no complaints)
+     ```
+     valgrind ls -l
+     ```
+After valgrind is installed, in order to check for memory leaks, use the following command:
+```
+valgrind --leak-check=full --show-leak-kinds=all --leak-resolution=high --track-origins=yes ./HMSG  > log.txt 2>&1
+```
+**REMARK:** As the program has a lot of buffers, at the log, there will be messages for "still reachable" data. The best approach is to run the command line above twice, and compare the two logs generated to see if the reachable data is the same.
+
+## Disabling Wi-Fi and Bluetooth (for saving a few mA)
+* STEP 1: Edit config file:
+    ```
+    sudo nano /boot/config.txt
+    ```
+* STEP 2: Add the following lines to the file: 
+    ```
+    dtoverlay=disable-wifi
+    dtoverlay=disable-bt
+    ```
+## socketCAN information:
+ * https://en.wikipedia.org/wiki/SocketCAN
+ * https://elinux.org/CAN_Bus
+
+## Flashing Raspberry Pi:
+ * https://www.raspberrypi.com/software/
+
+## CAN Utils - HAPCAN AND CAN Messages
+For initial tests, you can use CAN Utils.
+* *Reading messages from CAN:*
+```
+sudo candump can0 -t A
+```
+* *Writing messages to the CAN Bus (example for Button Frame):*
+```
+cansend can0 0602DEED#FFFF0101FFFFFFFF
+```
+The example below is for a button module (UNIV 3.1.3.1) setup as MODULE 11 (0x0B) from GROUP 100 (0x64).
+When the button 13 is pressed, the CAN message sent by the module is:
+* CANID (32-bit / 4 Bytes): 0x06020B64
+* DATA (8 Bytes): 0xFF 0xFF 0x0D 0xFF 0x01 0xFF 0xFF 0xFF
+
+*Breaking down the message:*
+* CANID:
+    * Frametype (CANID bits 28 through 17): 0x301
+    * Flags (just one nibble): 0x0
+    * Module: 0x0B
+    * Group: 0x64
+* DATA:
+    * D2 (CHANNEL): 0x0D (13 in decimal)
+    * D3 (BUTTON):  0xFF (closed)
+    * D4 (LED):     0x01 (disabled)        
+
+When the button 13 is released, the CAN message sent by the module is:
+* CANID (32-bit / 4 Bytes): 0x06020B64
+* DATA (8 Bytes): 0xFF 0xFF 0x0D 0x00 0x01 0xFF 0xFF 0xFF
+
+It is the same as before, but D3 (BUTTON) is set to 0x00 (open).
