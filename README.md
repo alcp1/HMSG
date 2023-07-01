@@ -1018,6 +1018,51 @@ The following is the Payload sent to the STATUS topic (*errorState*) when the mo
 # Additional resources:
 Here are some *optional* installation that could be performed, and additional information on some of the aspects involved in the development of HMSG.
 
+## Visual Studio Code Debug
+To debug the HMSG program using VS Code, use the steps below:
+ * STEP 1: Install the extension on your PC:
+     - Remote - SSH (by Microsoft)
+     - Remote Development (by Microsoft)
+     - Remote Explorer (by Microsoft)
+ * STEP 2: Connect to the raspberry pi:
+    - On VS Code, go to File > New Window
+    - Go to Remote Explorer (button on the Activity Bar on the left)
+    - Under the Menu "REMOTE", select "SSH", and "New Remote" (the "+" sign).
+    - On the dialog box for "Enter SSH Connection Command", type the command below (using the correct user name and IP address of your raspberry pi):
+    ```
+    ssh pi@192.168.0.255
+    ```
+    - Select the SSH file you want to update
+    - A message "Host Added" will appear. Select "Connect"
+    - Select the platform (in this case, Linux)
+    - It will ask you to check the fingerprint of the connect devide. Select "Continue".
+    - The password for the raspberry pi user will be asked. Type it and continue.
+    - It will setup the VS Code server. Wait it to finish.
+    - On the initial page or the "File" menu, select "Open Folder...".
+    - Select the folder:
+        ```
+        /home/pi/HMSG/SW/
+        ```
+        **REMARK**: Use the appropriate user for the folder path (it may not be "pi").
+    - It will ask if you trust the authors of this folder. Check the box that you trust the parent folder authors, and press the "Yes, I trust the authors" button.
+    - It will ask say that a git repository was found. Select yes if you intend to develop using github.
+* STEP 3: Add the following extensions to the raspberry pi:
+    - C/C++ (by Microsoft)
+    - C/C++ Extension Pack (by Microsoft). It will install 
+    - Makefile Tools (by Microsoft)
+* Step 4: Update json files:
+    - Inside the folder .vscode, configure the files launch.json, settings.json and tasks.json (they are a part of the HMSG repository in github).
+    **REMARK**: Use the appropriate user for the folder path (it may not be "pi").
+* Step 5: Click on "Makefile" (button on the Activity Bar on the left) and configure the Makefile Options as follows:
+    - Configuration: [Default]
+    - Build target: [all]
+    - Launch target: [HMSG]
+    - Makefile: [Makefile]
+    - Make: [/usr/bin/make]
+
+To **build** the project, select the “Makefile” button on the left panel, and press “Makefile: Build the current target”.
+To **debug** the project, go to “Run and Debug” button on the left panel, and select (gdb) Launch.
+
 ## Valgrind Install (for memory leak tests):
 It is needed to make from source (apt-get valgrind will install an older version which dows not work).
 * PRE-BUILD 1: Uninstall the non working valgrind version (OPTIONAL - only if previously installed):
