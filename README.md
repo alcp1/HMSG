@@ -182,7 +182,7 @@ At this point you should be able to read and write messages to the CAN Bus using
     
     User=pi
     ExecStart= /home/pi/HMSG/SW/HMSG
-    
+    WorkingDirectory=/home/pi/HMSG/SW
     Restart=always
     RestartSec=40
     
