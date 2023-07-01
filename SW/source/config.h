@@ -6,6 +6,9 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 01/Jul/2023 |                               | ALCP             //
+// - Use relative path for JSON config file.                                  //
+//----------------------------------------------------------------------------//
 
 #ifndef CONFIG_H
 #define CONFIG_H
@@ -24,7 +27,7 @@ extern "C" {
 //----------------------------------------------------------------------------//
 #define CONFIG_GENERAL_SETTINGS_LEVEL  "GeneralSettings"
 /* Other Definitions */
-#define JSON_CONFIG_FILE_PATH  "/home/pi/HMSG/SW/config.json"
+#define JSON_CONFIG_FILE_PATH  "./config.json"
     
 //----------------------------------------------------------------------------//
 // EXTERNAL TYPES

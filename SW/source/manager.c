@@ -12,6 +12,9 @@
 //  1.02     | 27/Jun/2023 |                               | ALCP             //
 // - Add Build Version Debug                                                  //
 //----------------------------------------------------------------------------//
+//  1.03     | 01/Jul/2023 |                               | ALCP             //
+// - Add SW Version Debug                                                     //
+//----------------------------------------------------------------------------//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,6 +22,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include "app.h"
 #include "auxiliary.h"
 #include "buffer.h"
 #include "canbuf.h"
@@ -675,7 +679,9 @@ void managerInit(void)
      * Build date
      *************************************************************************/
     #ifdef DEBUG_VERSION
-    debug_print("HMSG Start! Build date/time = %s - %s\n", __DATE__, __TIME__);
+    debug_print("HMSG Start! Version = %s.%s\n", APP_SW_MAIN_VERSION, 
+            APP_SW_SUB_VERSION);
+    debug_print("HMSG Build date/time = %s - %s\n", __DATE__, __TIME__);
     #endif
     /**************************************************************************
      * INIT CONFIG AND GATEWAY
