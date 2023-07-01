@@ -160,7 +160,7 @@ At this point you should be able to read and write messages to the CAN Bus using
     ```
 * STEP 4: Update the configuration file /home/pi/HMSG/SW/config.json 
     
-    **REMARK:** See the section "Configuration file" below for details on how to update the file.
+    **REMARK:** See the section [Configuration File](#configuration-file) below for details on how to update the file.
     
 * STEP 5: Run the program
     ```
@@ -195,109 +195,9 @@ At this point you should be able to read and write messages to the CAN Bus using
     sudo systemctl daemon-reload
     sudo systemctl enable hmsg.service
     ```
-# Additional resources:
-## Valgrind Install (for memory leak tests):
-It is needed to make from source (apt-get valgrind will install an older version which dows not work).
-* PRE-BUILD 1: Uninstall the non working valgrind version (OPTIONAL - only if previously installed):
-     ```
-     sudo apt-get --purge valgrind
-     ```
-* PRE-BUILD 2: Force the 32-bit kernel (needed for raspberry pi 4):
-     ```
-     sudo nano /boot/config.txt
-     ```
-     Add the following lines to the end:
-     ```
-     arm_64bit=0
-     ```
-* PRE-BUILD 3: Install autoconf:
-     ```
-     sudo apt install autoconf 
-     ```
-* STEP 1: Clone the code from GIT:
-     ```
-     git clone https://sourceware.org/git/valgrind.git
-     ```
-* STEP 2: Go into the source directory.
-     ```
-     cd ./valgrind
-     ```
-* STEP 3: Setup the environment
-     ```
-     sudo ./autogen.sh
-     ```
-* STEP 4: Configure
-     ```
-     sudo ./configure
-     ```
-* STEP 5: Compile
-     ```
-     sudo make
-     ```
-* STEP 6: Install
-     ```
-     sudo make install
-     ```
-* STEP 7: Check installation (there should be no complaints)
-     ```
-     valgrind ls -l
-     ```
-After valgrind is installed, in order to check for memory leaks, use the following command:
-```
-valgrind --leak-check=full --show-leak-kinds=all --leak-resolution=high --track-origins=yes ./HMSG  > log.txt 2>&1
-```
-**REMARK:** As the program has a lot of buffers, at the log, there will be messages for "still reachable" data. The best approach is to run the command line above twice, and compare the two logs generated to see if the reachable data is the same.
-
-## Disabling Wi-Fi and Bluetooth (for saving a few mA)
-* STEP 1: Edit config file:
-    ```
-    sudo nano /boot/config.txt
-    ```
-* STEP 2: Add the following lines to the file: 
-    ```
-    dtoverlay=disable-wifi
-    dtoverlay=disable-bt
-    ```
-## socketCAN:
- * https://en.wikipedia.org/wiki/SocketCAN
- * https://elinux.org/CAN_Bus
-
-## Flashing Raspberry Pi:
- * https://www.raspberrypi.com/software/
-
-## CAN Utils - HAPCAN AND CAN Messages
-For initial tests, you can use CAN Utils.
-* *Reading messages from CAN:*
-```
-sudo candump can0 -t A
-```
-* *Writing messages to the CAN Bus (example for Button Frame):*
-```
-cansend can0 0602DEED#FFFF0101FFFFFFFF
-```
-The example below is for a button module (UNIV 3.1.3.1) setup as MODULE 11 (0x0B) from GROUP 100 (0x64).
-When the button 13 is pressed, the CAN message sent by the module is:
-* CANID (32-bit / 4 Bytes): 0x06020B64
-* DATA (8 Bytes): 0xFF 0xFF 0x0D 0xFF 0x01 0xFF 0xFF 0xFF
-
-*Breaking down the message:*
-* CANID:
-    * Frametype (CANID bits 28 through 17): 0x301
-    * Flags (just one nibble): 0x0
-    * Module: 0x0B
-    * Group: 0x64
-* DATA:
-    * D2 (CHANNEL): 0x0D (13 in decimal)
-    * D3 (BUTTON):  0xFF (closed)
-    * D4 (LED):     0x01 (disabled)        
-
-When the button 13 is released, the CAN message sent by the module is:
-* CANID (32-bit / 4 Bytes): 0x06020B64
-* DATA (8 Bytes): 0xFF 0xFF 0x0D 0x00 0x01 0xFF 0xFF 0xFF
-
-It is the same as before, but D3 (BUTTON) is set to 0x00 (open).
-
 # Configuration file
+Here is how the file config.json can be configured:
+
 ## Section "GeneralSettings"
 In this section, it is possible to configure the following settings:
 * Configuration ID:
@@ -1113,3 +1013,108 @@ The following is the Payload sent to the STATUS topic (*errorState*) when the mo
 | Status       | MQTT Payload                                               | 
 | :---         | :---                                                       | 
 | Sensor Error | *Number* from **0** to **255**                             | 
+
+
+# Additional resources:
+Here are some *optional* installation that could be performed, and additional information on some of the aspects involved in the development of HMSG.
+
+## Valgrind Install (for memory leak tests):
+It is needed to make from source (apt-get valgrind will install an older version which dows not work).
+* PRE-BUILD 1: Uninstall the non working valgrind version (OPTIONAL - only if previously installed):
+     ```
+     sudo apt-get --purge valgrind
+     ```
+* PRE-BUILD 2: Force the 32-bit kernel (needed for raspberry pi 4):
+     ```
+     sudo nano /boot/config.txt
+     ```
+     Add the following lines to the end:
+     ```
+     arm_64bit=0
+     ```
+* PRE-BUILD 3: Install autoconf:
+     ```
+     sudo apt install autoconf 
+     ```
+* STEP 1: Clone the code from GIT:
+     ```
+     git clone https://sourceware.org/git/valgrind.git
+     ```
+* STEP 2: Go into the source directory.
+     ```
+     cd ./valgrind
+     ```
+* STEP 3: Setup the environment
+     ```
+     sudo ./autogen.sh
+     ```
+* STEP 4: Configure
+     ```
+     sudo ./configure
+     ```
+* STEP 5: Compile
+     ```
+     sudo make
+     ```
+* STEP 6: Install
+     ```
+     sudo make install
+     ```
+* STEP 7: Check installation (there should be no complaints)
+     ```
+     valgrind ls -l
+     ```
+After valgrind is installed, in order to check for memory leaks, use the following command:
+```
+valgrind --leak-check=full --show-leak-kinds=all --leak-resolution=high --track-origins=yes ./HMSG  > log.txt 2>&1
+```
+**REMARK:** As the program has a lot of buffers, at the log, there will be messages for "still reachable" data. The best approach is to run the command line above twice, and compare the two logs generated to see if the reachable data is the same.
+
+## Disabling Wi-Fi and Bluetooth (for saving a few mA)
+* STEP 1: Edit config file:
+    ```
+    sudo nano /boot/config.txt
+    ```
+* STEP 2: Add the following lines to the file: 
+    ```
+    dtoverlay=disable-wifi
+    dtoverlay=disable-bt
+    ```
+## socketCAN information:
+ * https://en.wikipedia.org/wiki/SocketCAN
+ * https://elinux.org/CAN_Bus
+
+## Flashing Raspberry Pi:
+ * https://www.raspberrypi.com/software/
+
+## CAN Utils - HAPCAN AND CAN Messages
+For initial tests, you can use CAN Utils.
+* *Reading messages from CAN:*
+```
+sudo candump can0 -t A
+```
+* *Writing messages to the CAN Bus (example for Button Frame):*
+```
+cansend can0 0602DEED#FFFF0101FFFFFFFF
+```
+The example below is for a button module (UNIV 3.1.3.1) setup as MODULE 11 (0x0B) from GROUP 100 (0x64).
+When the button 13 is pressed, the CAN message sent by the module is:
+* CANID (32-bit / 4 Bytes): 0x06020B64
+* DATA (8 Bytes): 0xFF 0xFF 0x0D 0xFF 0x01 0xFF 0xFF 0xFF
+
+*Breaking down the message:*
+* CANID:
+    * Frametype (CANID bits 28 through 17): 0x301
+    * Flags (just one nibble): 0x0
+    * Module: 0x0B
+    * Group: 0x64
+* DATA:
+    * D2 (CHANNEL): 0x0D (13 in decimal)
+    * D3 (BUTTON):  0xFF (closed)
+    * D4 (LED):     0x01 (disabled)        
+
+When the button 13 is released, the CAN message sent by the module is:
+* CANID (32-bit / 4 Bytes): 0x06020B64
+* DATA (8 Bytes): 0xFF 0xFF 0x0D 0x00 0x01 0xFF 0xFF 0xFF
+
+It is the same as before, but D3 (BUTTON) is set to 0x00 (open).
