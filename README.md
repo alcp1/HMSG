@@ -1063,6 +1063,11 @@ To debug the HMSG program using VS Code, use the steps below:
 To **build** the project, select the “Makefile” button on the left panel, and press “Makefile: Build the current target”.
 To **debug** the project, go to “Run and Debug” button on the left panel, and select (gdb) Launch.
 
+**HINT**: If the Visual Studio connection to the raspberry pi stops working, it is possible to remove all the files and start from the STEP 1 again. Go to the home folder (i.e. /home/pi) and do:
+```
+rm -r ./.vscode-server/ -f
+```
+
 ## Github integration
 To commit the changes from the raspberry pi to github:
 * Step 1: From de SW folder, edit the git config file:
