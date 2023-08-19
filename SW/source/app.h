@@ -6,6 +6,13 @@
 //  1.00     | 01/Jul/2023 |                               | ALCP             //
 // - Add SW version.                                                          //
 //----------------------------------------------------------------------------//
+//  1.01     | 19/Aug/2023 |                               | ALCP             //
+// - Perform initial status update for all configured modules on init and on  //
+// MQTT or CAN connection. Impacted files:                                    //
+//     - hapcansystem.c version 1.02                                          //
+//     - hapcansystem.h version 1.01                                          //
+//     - manager.c version 1.04                                               //
+//----------------------------------------------------------------------------//
 
 #ifndef APP_H
 #define APP_H
@@ -22,7 +29,7 @@ extern "C" {
 // EXTERNAL DEFINITIONS
 //----------------------------------------------------------------------------//
 #define APP_SW_MAIN_VERSION  "01"
-#define APP_SW_SUB_VERSION  "10"
+#define APP_SW_SUB_VERSION  "11"
     
 //----------------------------------------------------------------------------//
 // EXTERNAL TYPES

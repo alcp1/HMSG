@@ -6,6 +6,10 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 19/Aug/2023 |                               | ALCP             //
+// - Perform initial status update for all configured modules on init         //
+//----------------------------------------------------------------------------//
+
 
 #ifndef HAPCANSYSTEM_H
 #define HAPCANSYSTEM_H
@@ -36,6 +40,11 @@ extern "C" {
  * Init - to be called every time the configuration changes
  */
 void hsystem_init(void);
+
+/*
+ * Request Status Update for all configured modules
+ */
+void hsystem_statusUpdate(void);
 
 /**
  * Check if a received MQTT message is related to a system message / update 

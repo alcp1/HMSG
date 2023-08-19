@@ -6,6 +6,12 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 15/Jul/2023 |                               | ALCP             //
+// - Add new frame types (HTIM and HRGBW)                                     //
+//----------------------------------------------------------------------------//
+//  1.02     | 19/Aug/2023 |                               | ALCP             //
+// - Perform initial status update for all configured modules on init         //
+//----------------------------------------------------------------------------//
 
 //----------------------------------------------------------------------------//
 // Includes
@@ -446,7 +452,8 @@ static bool hsystem_getGroupNodeFromTopic(char *received_topic,
 static void hsystem_addModulesToList(void)
 {
     int check;
-    const char* a_str[] = {"HAPCANRelays", "HAPCANButtons", "HAPCANRGBs"};
+    const char* a_str[] = {"HAPCANRelays", "HAPCANButtons", "HAPCANRGBs", 
+                            "RGBWs", "TIMs"};
     int n_types = sizeof(a_str)/sizeof(a_str[0]);
     int i_type;
     int i_module;
@@ -1264,9 +1271,21 @@ void hsystem_init(void)
     // LOCK CONTROL
     pthread_mutex_lock(&g_hsystem_control_mutex);
     // Clear Update Request
-    hsystem_setControlFlags(255, 255, 255, 255, UPDATE_TYPE_ALL, true);
+    hsystem_setControlFlags(255, 255, 255, 255, UPDATE_TYPE_ALL, true);    
     // UNLOCK CONTROL
     pthread_mutex_unlock(&g_hsystem_control_mutex);
+    // Initial Status Update
+    hsystem_statusUpdate();
+}
+
+/*
+ * Request Status Update for all configured modules
+ */
+void hsystem_statusUpdate(void)
+{
+    // INITIAL STATUS UPDATE: Set node to 0 and group to 0 to update status of 
+    // all nodes
+    hsystem_setUpdateFlags(UPDATE_TYPE_STATUS, 0, 0);
 }
 
 /**

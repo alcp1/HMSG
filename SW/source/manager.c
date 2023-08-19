@@ -15,6 +15,10 @@
 //  1.03     | 01/Jul/2023 |                               | ALCP             //
 // - Add SW Version Debug                                                     //
 //----------------------------------------------------------------------------//
+//  1.04     | 19/Aug/2023 |                               | ALCP             //
+// - Perform initial status update for all configured modules when CAN and    //
+// MQTT are connected                                                         //
+//----------------------------------------------------------------------------//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -608,20 +612,23 @@ void* managerHandleHAPCANPeriodic(void *arg)
         {
             /* STATE CHECK AND RE-INIT */
             check = canbuf_getState(0, &sc_state);
-            if( check == EXIT_SUCCESS )
+            if( (check == EXIT_SUCCESS) && (sc_state == CAN_CONNECTED) && 
+                (mqttbuf_getState() == MQTT_CONNECTED) )
+            {                                    
+                //----------------------------------------------------------
+                // Check for messages to be sent to CAN Bus or 
+                // MQTT responses to be sent when updating the module 
+                // information, or getting its status
+                //----------------------------------------------------------
+                // Error is handled within the functions
+                hsystem_periodic();
+                hrgb_periodic();
+                hrgbw_periodic();
+            }
+            else
             {
-                if(sc_state == CAN_CONNECTED)
-                {
-                    //----------------------------------------------------------
-                    // Check for messages to be sent to CAN Bus or 
-                    // MQTT responses to be sent when updating the module 
-                    // information, or getting its status
-                    //----------------------------------------------------------
-                    // Error is handled within the functions
-                    hsystem_periodic();
-                    hrgb_periodic();
-                    hrgbw_periodic();
-                }                
+                // Request initial status update
+                hsystem_statusUpdate();
             }
         }
         // 50ms Loop - Give time for the modules to respond and to not increase
