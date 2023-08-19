@@ -1089,7 +1089,7 @@ sudo systemctl status hmsg.service
 sudo tail -f /var/log/syslog -n 50 | more
 ```
 ```
-sudo grep -i 'HMSG' /var/log/syslog
+grep --text 'HMSG' /var/log/syslog
 ```
 ```
 sudo vcgencmd measure_temp
