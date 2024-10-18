@@ -38,19 +38,19 @@ The following steps are needed to setup and configure the Raspberry Pi to run th
      ```
  * STEP 8: Inside the config tool, configure the following items:
     * Advanced Options > Expand Filesystem
- * STEP 7: Reboot
-    ```
-    sudo reboot
-    ```
- * STEP 8: Setup the network options (optional).
-    ```
-    sudo nano /etc/dhcpcd.conf
-    ```
  * STEP 9: Reboot
     ```
     sudo reboot
     ```
-* STEP 10: Update
+ * STEP 10: Setup the network options (optional).
+    ```
+    sudo nano /etc/dhcpcd.conf
+    ```
+ * STEP 11: Reboot
+    ```
+    sudo reboot
+    ```
+* STEP 12: Update
     ```
     sudo apt-get update
     sudo apt-get upgrade
@@ -247,7 +247,7 @@ In this section, it is possible to configure the following settings:
     | rawHapcanPubAll    | enable Pub of all application frames                         | *Boolean* (**true** or **false**)                                                   |
     | rawHapcanPubTopic  | MQTT Raw Publish topic                                       | *String* of MQTT Topic the RAW Messages will be Published to                        |
     | rawHapcanSubTopics | MQTT Raw Subscription topic                                  | *JSON Array* with *Strings* of MQTT Topics the RAW Messages will be Subscribed from |
-    | rawHapcanPubModules      | List of modules to have their application messages published | *JSON Array* with a list of modules - see field below |
+    | rawHapcanPubModules      | List of modules to have their application messages published | *JSON Array* with a list of modules - see fields below |
 
     These fields configure the MQTT RAW Frame options. The MQTT RAW Frame is a JSON String with all the fields found in a typical HAPCAN Frame. Here is one example to set a LED from a UNIV 3.1.3.x button:
     
