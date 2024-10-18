@@ -1,5 +1,5 @@
 # HMSG
-HAPCAN / MQTT / Socket Server Gateway for Raspberry Pi
+HAPCAN / MQTT / Socket Server Gateway for Raspberry Pi!
 
 # Scope
 The HAPCAN - MQTT - Socket Gateway (or **HMSG** for short) was originally thought to be an extension of the HAPCAN ETHERNET INTERFACE (univ 3.102.0.x), with the following features:
@@ -50,32 +50,32 @@ The following steps are needed to setup and configure the Raspberry Pi to run th
     ```
     sudo reboot
     ```
+* STEP 10: Update
+    ```
+    sudo apt-get update
+    sudo apt-get upgrade
+    sudo reboot
+    ```
+
 ## Installing dependencies
 ### Install git
 ```
 sudo apt-get install git
 ```
 ### Compile and Install Eclipse Paho C client library
-* STEP 1: Update Packages:
-    ```
-    sudo apt-get update
-    sudo apt-get upgrade
-    sudo apt-get dist-upgrade
-    sudo reboot
-    ```
-* STEP 2: Install Open SSL
+* STEP 1: Install Open SSL
     ```
     sudo apt-get install libssl-dev
     ```
-* STEP 3: Install Doxygen
+* STEP 2: Install Doxygen
     ```
     sudo apt-get install doxygen
     ```
-* STEP 4: Get Library Repository:
+* STEP 3: Get Library Repository:
     ```
     git clone https://github.com/eclipse/paho.mqtt.c.git
     ```
-* STEP 5: Compile and Install
+* STEP 4: Compile and Install
     ```
     cd paho.mqtt.c
     sudo make
@@ -91,7 +91,7 @@ sudo apt install libjson-c-dev
 ## Setting Up CAN Interface / CAN HAT
 * STEP 1: Edit config file to enable SPI and MCP2515 interface:
     ```
-    sudo nano /boot/config.txt
+    sudo nano /boot/firmware/config.txt
     ```
 * STEP 2: Add the following lines to the end of the file (*this step will depend on the HAT used*):
     
@@ -143,7 +143,7 @@ sudo apt install libjson-c-dev
     ```
 ## Initial Test
 At this point you should be able to read and write messages to the CAN Bus using the CAN Utils (see additional resources below). You can use this tool to check your setup before compiling and running the code.
-## Complie the HMSG code and run it:
+## Compile the HMSG code and run it:
 * STEP 1: Go to user folder:
     ```
     cd /home/pi
@@ -237,25 +237,55 @@ In this section, it is possible to configure the following settings:
 
     These fields configure the MQTT options. If *enableMQTT* is false, this feature is disbled. The *mqttBroker* should be set with the IP Address of the MQTT Broker. For instance, "192.168.0.100". The *mqttClientID* is used for the HMSG modue to identify itself when connecting to the MQTT Broker. No special requirements are needed here. For the tests, a simple, short string was used, such as "RPiTest". The *subscribeTopics* is a JSON array of topics (strings) that the module will subscribe to.
 
-    **REMARK:** When setting up the modules (for instance, a Relay module), if a command topic is used to send a HAPCAN command to a module, this command topic has to be subscribed in this list of *subscribeTopics*, otherwise the command will not get to the HMSG module. For example, if the coomand topic of a ginven relay module is set as "MyRootTopic/MyRelay/set", the *subscribeTopics* should have "MyRootTopic/MyRelay/set", or "MyRootTopic/MyRelay/#" or "MyRootTopic/#".
+    **REMARK:** When setting up the modules (for instance, a Relay module), if a command topic is used to send a HAPCAN command to a module, this command topic has to be subscribed in this list of *subscribeTopics*, otherwise the command will not get to the HMSG module. For example, if the coomand topic of a ginven relay module is set as "MyRootTopic/MyRelay/set", the *subscribeTopics* should have "MyRootTopic/MyRelay/set", or "MyRootTopic/MyRelay/#" or "MyRootTopic/#". Same is valid for *rawHapcanSubTopics* (each topic has to be part of the subscribed topics on *subscribeTopics*).
 
 * RAW HAPCAN Frames
 
-    | Field             | Description                   | Possible Values                                                 |
-    | :---              | :---                          | :---                                                            |
-    | enableRawHapcan   | enable RAW HAPCAN Frames      | *Boolean* (**true** or **false**)                               |
-    | rawHapcanPubTopic | MQTT Raw Publish topic        | *String* of MQTT Topic the RAW Messages will be Published to    |
-    | rawHapcanSubTopic | MQTT Raw Subscription topic   | *String* of MQTT Topic the RAW Messages will be Subscribed from |
+    | Field              | Description                                                  | Possible Values                                                                     |
+    | :---               | :---                                                         | :---                                                                                |
+    | enableRawHapcan    | enable RAW HAPCAN Frames                                     | *Boolean* (**true** or **false**)                                                   |
+    | rawHapcanPubAll    | enable Pub of all application frames                         | *Boolean* (**true** or **false**)                                                   |
+    | rawHapcanPubTopic  | MQTT Raw Publish topic                                       | *String* of MQTT Topic the RAW Messages will be Published to                        |
+    | rawHapcanSubTopics | MQTT Raw Subscription topic                                  | *JSON Array* with *Strings* of MQTT Topics the RAW Messages will be Subscribed from |
+    | rawPubModules      | List of modules to have their application messages published | *JSON Array* with a list of modules - see field below |
 
     These fields configure the MQTT RAW Frame options. The MQTT RAW Frame is a JSON String with all the fields found in a typical HAPCAN Frame. Here is one example to set a LED from a UNIV 3.1.3.x button:
     
     *{"Frame":266, "Flags":0, "Module":170, "Group":170, "D0":2, "D1":0, "D2":11, "D3":100, "D4":32, "D5":255, "D6":255, "D7":255}*
     
     The MQTT RAW Frame is only sent for application messages. It means that whenever a CAN Bus HAPCAN message is read with "Frame" higher than 0x200, the HMSH module transform this message into a JSON String as in the example above, and publishes it to the *rawHapcanPubTopic*. 
+  
+    Also, whenever any JSON String with the given format is received on any of the *rawHapcanSubTopics*, the message is transformed into a HAPCAN Frame, and sent to the BUS. For the JSON string received by the HMSG module, no check is performed for the "Frame" (it means a system message - "Frame" lower than 0x200 - could be sento to the CAN Bus as well).
+
+    If *rawHapcanPubAll* is set to true, all application frames are published to the configured rawHapcanPubTopic. Otherwise, only the modules configured on the field *rawPubModules* are published. The fields to be added are:
+    | Field                | Description                               | Possible Values                |
+    | :---                 | :---                                      | :---                           |
+    | node                 | HAPCAN module / node                      | *Number* from **1** to **255** |
+    | group                | HAPCAN group number                       | *Number* from **1** to **255** |
     
-    Also, whenever any JSON String with the given format is received on the *rawHapcanSubTopic*, the message is transformed into a HAPCAN Frame, and sent to the BUS. For the JSON string received by the HMSG module, no check is performed for the "Frame" (it means a system message is sento to the CAN Bus as well).    
-    
-    One posible use of this feature is to create a HAPCAN network extension. If two HMSG modules are connected to the same Network (via the ethernet port), but each o them is connected to its own HAPCAN nodes (via the CAN Bus HAT), the nodes from each HAPCAN network can exchange messages to each other. It is only necessary to configure the *rawHapcanPubTopic* of one HMSG as the *rawHapcanSubTopic* of the other HMSG and vice-versa.
+    One posible use of this feature is to create a HAPCAN network extension. If two HMSG modules are connected to the same Network (via the ethernet port), but each one of them is connected to its own HAPCAN nodes (via the CAN Bus HAT), the nodes from each HAPCAN network can exchange messages to each other. It is only necessary to configure the *rawHapcanPubTopic* of one HMSG as one of the the *rawHapcanSubTopics* of the other HMSG and vice-versa.
+
+  <details><summary>Example 1 - JSON String (exerpt) - All channels, all status, all commands configured </summary>
+  <p>
+      
+  ``` json
+    "enableRawHapcan": true,
+    "rawHapcanPubAll": false,
+    "rawHapcanPubTopic": "MyRootTopic/RAW/rPiTest1",
+    "rawHapcanSubTopics": 
+    [
+        "MyRootTopic/RAW/rPiTest2",
+        "MyRootTopic/RAW/rPiTest3"
+    ],
+    "rawPubModules":
+    [
+        {"node": 1, "group": 1},
+        {"node": 1, "group": 2}
+    ],
+  ````
+      
+  </p>
+  </details>
     
 * HAPCAN Module Status
  
@@ -1015,7 +1045,7 @@ The following is the Payload sent to the STATUS topic (*errorState*) when the mo
 | Sensor Error | *Number* from **0** to **255**                             | 
 
 
-# Additional resources:
+# Optional Installation:
 Here are some *optional* installation that could be performed, and additional information on some of the aspects involved in the development of HMSG.
 
 ## Visual Studio Code Debug
@@ -1028,7 +1058,7 @@ To debug the HMSG program using VS Code, use the steps below:
     - On VS Code, go to File > New Window
     - Go to Remote Explorer (button on the Activity Bar on the left)
     - Under the Menu "REMOTE", select "SSH", and "New Remote" (the "+" sign).
-    - On the dialog box for "Enter SSH Connection Command", type the command below (using the correct user name and IP address of your raspberry pi):
+    - On the dialog box for "Enter SSH Connection Command", type the command below (using the correct user name and IP address or network name of your raspberry pi):
     ```
     ssh pi@192.168.0.255
     ```
@@ -1068,7 +1098,7 @@ To **debug** the project, go to “Run and Debug” button on the left panel, an
 rm -r ./.vscode-server/ -f
 ```
 
-## Github integration
+#### Github integration
 To commit the changes from the raspberry pi to github:
 * Step 1: From de SW folder, edit the git config file:
 ```
@@ -1081,43 +1111,23 @@ sudo nano ../.git/config
  email = example@gmail.com
 ```
 
-## Useful terminal commands:
+## Setup SSH Keys on raspberry pi
+Check https://pimylifeup.com/raspberry-pi-ssh-keys/
+The summary is:
 ```
-sudo systemctl status hmsg.service
-```
-```
-sudo tail -f /var/log/syslog -n 50 | more
-```
-```
-grep --text 'HMSG' /var/log/syslog
+install -d -m 700 ~/.ssh
 ```
 ```
-sudo vcgencmd measure_temp
+nano ~/.ssh/authorized_keys
+```
+*Here it is needed to copy the public key from PuTTYgen and then save the file.
+```
+sudo chmod 644 ~/.ssh/authorized_keys
 ```
 ```
-top
+sudo chown pi:pi ~/.ssh/authorized_keys
 ```
-```
-sudo date
-```
-```
-sudo uptime
-```
-```
-raspi-gpio get prints the state of all GPIO pins
-```
-```
-raspi-gpio get X prints the state of GPIO pin X
-```
-```
-raspi-gpio set X op sets GPIO pin X as an output
-```
-```
-raspi-gpio set X dh sets GPIO pin X to drive high
-```
-```
-raspi-gpio set X dl sets GPIO pin X to drive low
-```
+**REMARK:** If the user is not pi, this file has to be updated with the correct user and folder.
 
 ## Valgrind Install (for memory leak tests):
 It is needed to make from source (apt-get valgrind will install an older version which dows not work).
@@ -1127,7 +1137,7 @@ It is needed to make from source (apt-get valgrind will install an older version
      ```
 * PRE-BUILD 2: Force the 32-bit kernel (needed for raspberry pi 4):
      ```
-     sudo nano /boot/config.txt
+     sudo nano /boot/firmware/config.txt
      ```
      Add the following lines to the end:
      ```
@@ -1174,13 +1184,187 @@ valgrind --leak-check=full --show-leak-kinds=all --leak-resolution=high --track-
 ## Disabling Wi-Fi and Bluetooth (for saving a few mA)
 * STEP 1: Edit config file:
     ```
-    sudo nano /boot/config.txt
+    sudo nano /boot/firmware/config.txt
     ```
 * STEP 2: Add the following lines to the file: 
     ```
     dtoverlay=disable-wifi
     dtoverlay=disable-bt
     ```
+
+## HW Watchdog
+To enable the raspberry pi's internal HW Watchdog:
+
+*See additional information at: https://pysselilivet.blogspot.com/2021/10/raspberry-pi-watchdog-made-simple.html*
+
+* STEP 1: Check if the watchdog HW is available:
+    ```
+    ls -al /dev/watchdog*
+    ```
+    The answer should be:    
+
+    *crw------- 1 root root  10, 130 Oct 17 20:26 /dev/watchdog*
+
+    *crw------- 1 root root 248,   0 Oct 17 20:26 /dev/watchdog0*
+
+ * STEP 2: Check the current settings:
+    ```
+    systemctl show | grep -i watchdog
+    ```
+    The answer should be something like this:    
+    
+    *WatchdogLastPingTimestampMonotonic=18446744073709551615*
+    
+    *RuntimeWatchdogUSec=0*
+    
+    *RuntimeWatchdogPreUSec=0*
+    
+    *RebootWatchdogUSec=10min*
+    
+    *KExecWatchdogUSec=0*
+    
+    *ServiceWatchdogs=yes*
+    
+    The info "RuntimeWatchdogUSec=0" tells us that the WD isn't active. **Must be greater than 0.**
+
+ * STEP 3: Enable Watchdog:
+    ```
+    sudo nano /etc/systemd/system.conf
+    ```
+    Add the lines below at the end of the file:
+    ```
+    RuntimeWatchdogSec=10
+    RebootWatchdogSec=5min
+    ```
+    See https://manpages.debian.org/testing/systemd/systemd-system.conf.5.en.html for more info on the parameters.
+    
+    Please note that the value "RuntimeWatchdogSec" must be <= 15, since the RPi processors can't handle a greater value.
+
+* STEP 4: Reboot
+    ```
+    sudo reboot
+    ```
+
+* STEP 5: Check if Watchdog is running
+    ```
+    journalctl -b --no-pager | grep Watchdog
+    ```
+    The answer should be:
+
+    *raspberrypi systemd[1]: Using hardware watchdog 'Broadcom BCM2835 Watchdog timer', version 0, device /dev/watchdog0*
+    
+    *raspberrypi systemd[1]: Watchdog running with a hardware timeout of 10s.*
+
+## SW Watchdog
+To enable the system's SW Watchdog:
+
+*See additional information at:* 
+
+*https://www.crawford-space.co.uk/old_psc/watchdog/Linux-Watchdog.html*
+
+*https://www.crawford-space.co.uk/old_psc/watchdog/watchdog-configure.html*
+
+* STEP 1: Enable HW watchdog
+    ```
+    sudo nano /boot/firmware/config.txt
+    ```
+    Add the following lines to the end of the [all] section:
+    ```
+    dtparam=watchdog=on
+    ```
+    Reboot
+    ```
+    sudo reboot
+    ```
+
+* STEP 2: Check HW Watchdog
+    ```
+    ls /dev/watchdog*
+    ```
+    The answer should be something like this:    
+    
+    */dev/watchdog  /dev/watchdog0*
+
+* STEP 3: Install the watchdog system service
+    ```
+    sudo apt-get update
+    sudo apt-get install watchdog
+    ```
+* STEP 4: Edit the settings
+    ```
+    sudo nano /etc/watchdog.conf
+    ```
+    Add the following lines to the end of the file:
+    ```
+    watchdog-device = /dev/watchdog
+    watchdog-timeout = 15
+    interface = eth0
+    retry-timeout = 60
+    ```
+* STEP 5: Start and enable
+    ```
+    sudo systemctl enable watchdog
+    sudo systemctl start watchdog
+    sudo systemctl status watchdog    
+    ```
+
+## Read-only file system
+* STEP 1: Go to config
+    ```
+    sudo raspi-config
+    ```
+
+* STEP 2: Enable Overlay File System
+    Inside the config tool, configure the following items:
+    * Performance Options > Overlay File System Enable/disable read-only file system > Yes
+  
+ * STEP 3: Reboot
+    ```
+    sudo reboot
+    ```
+
+# Additional resources:
+## Useful terminal commands:
+```
+sudo systemctl status hmsg.service
+```
+```
+sudo systemctl stop hmsg.service
+```
+```
+sudo tail -f /var/log/syslog -n 50 | more
+```
+```
+grep --text 'HMSG' /var/log/syslog
+```
+```
+sudo vcgencmd measure_temp
+```
+```
+top
+```
+```
+sudo date
+```
+```
+sudo uptime
+```
+```
+raspi-gpio get prints the state of all GPIO pins
+```
+```
+raspi-gpio get X prints the state of GPIO pin X
+```
+```
+raspi-gpio set X op sets GPIO pin X as an output
+```
+```
+raspi-gpio set X dh sets GPIO pin X to drive high
+```
+```
+raspi-gpio set X dl sets GPIO pin X to drive low
+```
+
 ## socketCAN information:
  * https://en.wikipedia.org/wiki/SocketCAN
  * https://elinux.org/CAN_Bus
