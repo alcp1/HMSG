@@ -24,7 +24,7 @@
     "MyRootTopic/RAW/rPiTest2",
     "MyRootTopic/RAW/rPiTest3"
 ],
-"rawPubModules":
+"rawHapcanPubModules":
 [
     {"node": 1, "group": 1},
     {"node": 1, "group": 2}

@@ -247,7 +247,7 @@ In this section, it is possible to configure the following settings:
     | rawHapcanPubAll    | enable Pub of all application frames                         | *Boolean* (**true** or **false**)                                                   |
     | rawHapcanPubTopic  | MQTT Raw Publish topic                                       | *String* of MQTT Topic the RAW Messages will be Published to                        |
     | rawHapcanSubTopics | MQTT Raw Subscription topic                                  | *JSON Array* with *Strings* of MQTT Topics the RAW Messages will be Subscribed from |
-    | rawPubModules      | List of modules to have their application messages published | *JSON Array* with a list of modules - see field below |
+    | rawHapcanPubModules      | List of modules to have their application messages published | *JSON Array* with a list of modules - see field below |
 
     These fields configure the MQTT RAW Frame options. The MQTT RAW Frame is a JSON String with all the fields found in a typical HAPCAN Frame. Here is one example to set a LED from a UNIV 3.1.3.x button:
     
@@ -257,7 +257,7 @@ In this section, it is possible to configure the following settings:
   
     Also, whenever any JSON String with the given format is received on any of the *rawHapcanSubTopics*, the message is transformed into a HAPCAN Frame, and sent to the BUS. For the JSON string received by the HMSG module, no check is performed for the "Frame" (it means a system message - "Frame" lower than 0x200 - could be sento to the CAN Bus as well).
 
-    If *rawHapcanPubAll* is set to true, all application frames are published to the configured rawHapcanPubTopic. Otherwise, only the modules configured on the field *rawPubModules* are published. The fields to be added are:
+    If *rawHapcanPubAll* is set to true, all application frames are published to the configured rawHapcanPubTopic. Otherwise, only the modules configured on the field *rawHapcanPubModules* are published. The fields to be added are:
     | Field                | Description                               | Possible Values                |
     | :---                 | :---                                      | :---                           |
     | node                 | HAPCAN module / node                      | *Number* from **1** to **255** |
@@ -277,7 +277,7 @@ In this section, it is possible to configure the following settings:
         "MyRootTopic/RAW/rPiTest2",
         "MyRootTopic/RAW/rPiTest3"
     ],
-    "rawPubModules":
+    "rawHapcanPubModules":
     [
         {"node": 1, "group": 1},
         {"node": 1, "group": 2}
