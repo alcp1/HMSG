@@ -6,6 +6,10 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 25/Oct/2024 |                               | ALCP             //
+// - Change use of MQTTClient_disconnect and MQTTClient_destroy to prevent    //
+// segmentation fault.                                                        //
+//----------------------------------------------------------------------------//
 
 /*
 * Includes
@@ -94,8 +98,8 @@ void mqtt_onConnLost(void *context, char *cause)
     debug_print("Connection lost!\n");
     debug_print("- Cause: %s\n", cause);
     #endif
-    // Do not Re-Init Buffers
-    mqtt_close();    
+    // Set state
+    setMQTTStateLocked(MQTT_STATE_OFF);
 }
 
 /* MQTT Callbak - On Message Delivered (only for QOS > 0) */

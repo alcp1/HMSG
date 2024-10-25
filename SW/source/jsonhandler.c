@@ -6,6 +6,9 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 24/Oct/2024 |                               | ALCP             //
+// - Add funtions jh_getJFieldIntObj and jh_getJArrayElementsObj              //
+//----------------------------------------------------------------------------//
 
 /*
 * Includes
@@ -40,17 +43,18 @@ static json_object *j_config;
 // INTERNAL FUNCTIONS
 //----------------------------------------------------------------------------//
 static int getJFieldBool(json_object *j_root, const char *field, bool *value);
-static int getJFieldDouble(json_object *j_root, const char *field, double *value);
+static int getJFieldDouble(json_object *j_root, const char *field, 
+    double *value);
 static int getJFieldInt(json_object *j_root, const char *field, int *value);
-static int getJFieldStringCopy(json_object *j_root, const char *field, char **value);
+static int getJFieldStringCopy(json_object *j_root, const char *field, 
+    char **value);
 static int getJFieldStringArrayCopy(json_object *j_root, const char *field, 
         int *elements, char ***value);
-static int getJFieldObject(json_object *j_root, const char *field, json_object **value);
-static int getObjectAndField(const char *level, int levelIndex, const char *field, 
-        int fieldIndex, const char *subField, 
-        json_object **data_obj, const char **data_field);
-static int getJArrayLength(const char *level, int levelIndex, const char *field, 
-        json_depth_t depth, int *value);
+static int getObjectAndFieldObj(json_object *j_root, const char *level, 
+    int levelIndex, const char *field, int fieldIndex, const char *subField, 
+    json_object **data_obj, const char **data_field);
+static int getJArrayLengthObj(json_object *j_root, const char *level, 
+    int levelIndex, const char *field, json_depth_t depth, int *value);
 
 /**
  * Get a boolean from a JSON object
@@ -362,6 +366,7 @@ static int getJFieldObject(json_object *j_root, const char *field, json_object *
  * Fill the object and the data field (string) to be read from the 
  * configuration file
  * 
+ * \param   j_root      JSON object (INPUT)
  * \param   level       string for the level within the config file (INPUT)
  * \param   levelIndex  if the level returns an array, the element number 
  *                          "levelIndex" is considered for the Level. (INPUT)
@@ -377,9 +382,9 @@ static int getJFieldObject(json_object *j_root, const char *field, json_object *
  *          JSON_ERROR_TYPE     object is null
  *          JSON_ERROR_OTHER    input field is null
  **/
-static int getObjectAndField(const char *level, int levelIndex, const char *field, 
-        int fieldIndex, const char *subField, 
-        json_object **data_obj, const char **data_field)
+static int getObjectAndFieldObj(json_object *j_root, const char *level, 
+    int levelIndex, const char *field, int fieldIndex, const char *subField, 
+    json_object **data_obj, const char **data_field)
 {
     int check = JSON_OK;
     json_object *obj1;
@@ -391,7 +396,7 @@ static int getObjectAndField(const char *level, int levelIndex, const char *fiel
     }
     else
     {
-        check = getJFieldObject(j_config, level, &obj1);
+        check = getJFieldObject(j_root, level, &obj1);
     }
     if(check == JSON_OK)
     {
@@ -465,6 +470,7 @@ static int getObjectAndField(const char *level, int levelIndex, const char *fiel
  * Fill the nuber of elements within a given JSAN Array element from the 
  * configuration file
  * 
+ * \param   j_root      JSON object (INPUT)
  * \param   level       string for the level within the config file (INPUT)
  * \param   levelIndex  if the level returns an array, the element number 
  *                          "levelIndex" is considered for the Level. (INPUT)
@@ -477,8 +483,8 @@ static int getObjectAndField(const char *level, int levelIndex, const char *fiel
  *          JSON_ERROR_TYPE     object is null
  *          JSON_ERROR_OTHER    input field is null
  **/
-static int getJArrayLength(const char *level, int levelIndex, const char *field, 
-        json_depth_t depth, int *value)
+static int getJArrayLengthObj(json_object *j_root, const char *level, 
+    int levelIndex, const char *field, json_depth_t depth, int *value)
 {
     int check = JSON_OK;
     json_object *obj1;
@@ -495,7 +501,7 @@ static int getJArrayLength(const char *level, int levelIndex, const char *field,
         //-----------------------------
         // Check field first
         //-----------------------------        
-        check = getJFieldObject(j_config, level, &obj1);
+        check = getJFieldObject(j_root, level, &obj1);
         if(check == JSON_OK)
         {
             if(json_object_get_type(obj1) == json_type_array)
@@ -628,8 +634,8 @@ int jh_getJFieldBool(const char *level, int levelIndex, const char *field,
     const char  *str;
     // LOCK - Use of JSON is not thread protected
     pthread_mutex_lock(&g_json_mutex);
-    check = getObjectAndField(level, levelIndex, field, fieldIndex, subField, 
-        &obj, &str);
+    check = getObjectAndFieldObj(j_config, level, levelIndex, field, fieldIndex, 
+        subField, &obj, &str);
     if(check == JSON_OK)
     {
         // First level is not 
@@ -657,8 +663,8 @@ int jh_getJFieldDouble(const char *level, int levelIndex, const char *field,
     const char  *str;
     // LOCK - Use of JSON is not thread protected
     pthread_mutex_lock(&g_json_mutex);
-    check = getObjectAndField(level, levelIndex, field, fieldIndex, subField, 
-        &obj, &str);    
+    check = getObjectAndFieldObj(j_config, level, levelIndex, field, fieldIndex, 
+        subField, &obj, &str);    
     if(check == JSON_OK)
     {
         check = getJFieldDouble(obj, str, value);
@@ -685,8 +691,8 @@ int jh_getJFieldInt(const char *level, int levelIndex, const char *field,
     const char  *str;
     // LOCK - Use of JSON is not thread protected
     pthread_mutex_lock(&g_json_mutex);
-    check = getObjectAndField(level, levelIndex, field, fieldIndex, subField, 
-        &obj, &str);    
+    check = getObjectAndFieldObj(j_config, level, levelIndex, field, fieldIndex, 
+        subField, &obj, &str);    
     if(check == JSON_OK)
     {
         check = getJFieldInt(obj, str, value);
@@ -704,6 +710,40 @@ int jh_getJFieldInt(const char *level, int levelIndex, const char *field,
     return check;
 }
 
+/* Get an integer within an object */
+int jh_getJFieldIntObj(const char *objStr, const char *level, int levelIndex, 
+        const char *field, int fieldIndex, const char *subField, int *value)
+{
+    int check;
+    json_object *obj1;
+    json_object *obj2;
+    const char  *str;
+    // LOCK - Use of JSON is not thread protected
+    pthread_mutex_lock(&g_json_mutex);
+    // Get the JSON Object for the input object string
+    check = getJFieldObject(j_config, objStr, &obj1);
+    if(check == JSON_OK)
+    {
+        check = getObjectAndFieldObj(obj1, level, levelIndex, field, 
+        fieldIndex, subField, &obj2, &str);    
+        if(check == JSON_OK)
+        {
+            check = getJFieldInt(obj2, str, value);
+        }
+    }    
+    // UNLOCK - Use of JSON is not thread protected
+    pthread_mutex_unlock(&g_json_mutex);
+    #ifdef DEBUG_JSON_ERRORS
+    if(check != JSON_OK)
+    {
+        debug_print("Error - jh_getJFieldIntObj: %d - level = %s - field = %s\n", 
+                check, level, field);
+    }    
+    #endif    
+    // Return
+    return check;
+}
+
 /* Get the copy of a string */
 int jh_getJFieldStringCopy(const char *level, int levelIndex, const char *field, 
         int fieldIndex, const char *subField, char **value)
@@ -713,8 +753,8 @@ int jh_getJFieldStringCopy(const char *level, int levelIndex, const char *field,
     const char  *str;
     // LOCK - Use of JSON is not thread protected
     pthread_mutex_lock(&g_json_mutex);
-    check = getObjectAndField(level, levelIndex, field, fieldIndex, subField, 
-        &obj, &str);
+    check = getObjectAndFieldObj(j_config, level, levelIndex, field, fieldIndex, 
+        subField, &obj, &str);
     if(check == JSON_OK)
     {        
         check = getJFieldStringCopy(obj, str, value);
@@ -741,13 +781,45 @@ int jh_getJArrayElements(const char *level, int levelIndex, const char *field,
     int check;
     // LOCK - Use of JSON is not thread protected
     pthread_mutex_lock(&g_json_mutex);
-    check = getJArrayLength(level, levelIndex, field, depth, value);    
+    check = getJArrayLengthObj(j_config, level, levelIndex, field, depth, 
+        value);
     // UNLOCK - Use of JSON is not thread protected
     pthread_mutex_unlock(&g_json_mutex);
     #ifdef DEBUG_JSON_ERRORS
     if(check != JSON_OK)
     {
         debug_print("Error - jh_getJArrayElements: %d - level = %s "
+                "levelIndex = %d - field = %s - depth = %d\n", 
+                check, level, levelIndex, field, depth);
+    }    
+    #endif    
+    // Return
+    return check;
+}
+
+/**
+ * Get the number of elements of a given JSON Array within an object
+ **/
+int jh_getJArrayElementsObj(const char *objStr, const char *level, 
+        int levelIndex, const char *field, json_depth_t depth, int *value)
+{
+    int check;
+    json_object *obj1;
+    // LOCK - Use of JSON is not thread protected
+    pthread_mutex_lock(&g_json_mutex);
+    // Get the JSON Object for the input object string
+    check = getJFieldObject(j_config, objStr, &obj1);
+    if(check == JSON_OK)
+    {
+        check = getJArrayLengthObj(obj1, level, levelIndex, field, depth, 
+            value);
+    }
+    // UNLOCK - Use of JSON is not thread protected
+    pthread_mutex_unlock(&g_json_mutex);
+    #ifdef DEBUG_JSON_ERRORS
+    if(check != JSON_OK)
+    {
+        debug_print("Error - jh_getJArrayElementsObj: %d - level = %s "
                 "levelIndex = %d - field = %s - depth = %d\n", 
                 check, level, levelIndex, field, depth);
     }    

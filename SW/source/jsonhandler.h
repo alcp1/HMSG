@@ -6,6 +6,9 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 24/Oct/2024 |                               | ALCP             //
+// - Add funtions jh_getJFieldIntObj and jh_getJArrayElementsObj              //
+//----------------------------------------------------------------------------//
 
 #ifndef JSONHANDLER_H
 #define JSONHANDLER_H
@@ -130,6 +133,26 @@ int jh_getJFieldInt(const char *level, int levelIndex, const char *field,
         int fieldIndex, const char *subField, int *value);
 
 /**
+ * Get an integer from an object within the JSON config file
+ * 
+ * \param   objStr      string for the object within the config file (INPUT)
+ * \param   level       string for the level within the object (INPUT)
+ * \param   levelIndex  if the level returns an array, the element number 
+ *                          "levelIndex" is considered for the Level. (INPUT)
+ * \param   field       Field as a string to be searched (INPUT)
+ * \param   fieldIndex  if the field returns an array, the element number 
+ *                          "fieldIndex" is considered for the field. (INPUT)
+ * \param   subField    if the field Index is an object, the SubField is used 
+ *                          to get correct value. (INPUT)
+ * \param   value   Value to be filled (OUTUT)
+ *  
+ * \return  JSON_OK             Value matches type and is not NULL
+ *          JSON_ERROR_TYPE     Type does not match
+ **/
+int jh_getJFieldIntObj(const char *objStr, const char *level, int levelIndex, 
+        const char *field, int fieldIndex, const char *subField, int *value);
+
+/**
  * Get a string copy from a JSON object 
  * - STRING HAS TO BE FREED AFTERWARDS!
  * 
@@ -151,7 +174,7 @@ int jh_getJFieldStringCopy(const char *level, int levelIndex, const char *field,
         int fieldIndex, const char *subField, char **value);
 
 /**
- * Get the number of elements of a given JSON Array 
+ * Get the number of elements of a given JSON Array
  * 
  * \param   level       string for the level within the config file (INPUT)
  * \param   levelIndex  if the level returns an array, the element number 
@@ -169,6 +192,28 @@ int jh_getJFieldStringCopy(const char *level, int levelIndex, const char *field,
  **/
 int jh_getJArrayElements(const char *level, int levelIndex, const char *field, 
         json_depth_t depth, int *value);
+
+/**
+ * Get the number of elements of a given JSON Array of an object within the 
+ * JSON config file
+ * 
+ * \param   objStr      string for the object within the config file (INPUT)
+ * \param   level       string for the level within the object (INPUT)
+ * \param   levelIndex  if the level returns an array, the element number 
+ *                          "levelIndex" is considered for the Level. (INPUT)
+ * \param   field       Field as a string to be searched (INPUT)
+ * \param   depth       Where to search within config file:
+ *                      JSON_DEPTH_LEVEL = search level only 
+ *                      JSON_DEPTH_LEVEL_AND_INDEX = search level and levelIndex 
+ *                      JSON_DEPTH_FIELD = search level and levelIndex and field
+ * \param   value       Number of elements in the JSON Array (OUTUT)
+ *  
+ * \return  JSON_OK             Value matches type and is not NULL
+ *          JSON_ERROR_TYPE     Type does not match
+ *          JSON_ERROR_OTHER    Other Error
+ **/
+int jh_getJArrayElementsObj(const char *objStr, const char *level, 
+        int levelIndex, const char *field, json_depth_t depth, int *value);
 
 /**
  * Get a string array copy from a JSON object

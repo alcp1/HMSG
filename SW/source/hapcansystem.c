@@ -12,6 +12,9 @@
 //  1.02     | 19/Aug/2023 |                               | ALCP             //
 // - Perform initial status update for all configured modules on init         //
 //----------------------------------------------------------------------------//
+//  1.03     | 23/Oct/2024 |                               | ALCP             //
+// - Fix MQTT status topic string                                             //
+//----------------------------------------------------------------------------//
 
 //----------------------------------------------------------------------------//
 // Includes
@@ -807,9 +810,9 @@ static void hsystem_getMQTTPayload(nodeList_t* element, char **topic,
         strcpy(*topic, str);
         // Get rest of topic "/GROUP/NODE"
         free(str);
-        str = malloc(9);
-        snprintf(str, 9, "/%d/%d/", element->group, element->node);
-        strncat(*topic, str, 9);
+        str = malloc(12);
+        snprintf(str, 10, "/%d/%d", element->group, element->node);
+        strncat(*topic, str, 10);
         free(str);
         //-------------------------------------------------
         // Create Payload

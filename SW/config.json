@@ -7,7 +7,7 @@
 "enableSocketServer": true,
 "socketServerPort": "33556",
 "enableMQTT": true,
-"mqttBroker": "192.168.0.11",
+"mqttBroker": "192.168.0.47",
 "mqttClientID": "rPiTest1",
 "subscribeTopics":
 [
@@ -21,13 +21,13 @@
 "rawHapcanPubTopic": "MyRootTopic/RAW/rPiTest1",
 "rawHapcanSubTopics": 
 [
-    "MyRootTopic/RAW/rPiTest2",
-    "MyRootTopic/RAW/rPiTest3"
+"MyRootTopic/RAW/rPiTest2",
+"MyRootTopic/RAW/rPiTest3"
 ],
 "rawHapcanPubModules":
 [
-    {"node": 1, "group": 1},
-    {"node": 1, "group": 2}
+{"node": 1, "group": 2},
+{"node": 1, "group": 4}
 ],
 "enableHapcanStatus": true,
 "statusPubTopic": "MyRootTopic/Status/Status",
@@ -36,27 +36,27 @@
 },
 "HAPCANRelays":
 [
-{"node": 10, "group": 235, "relays": [ {"channel": 1, "state": "MyRootTopic/Status/Test1", "command": "MyRootTopic/Command/Test1"}, {"channel": 2, "state": "MyRootTopic/Status/Test2", "command": "MyRootTopic/Command/Test2"}, {"channel": 3, "state": "MyRootTopic/Status/Test3", "command": "MyRootTopic/Command/Test3"}, {"channel": 4, "state": "MyRootTopic/Status/Test4", "command": "MyRootTopic/Command/Test4"}, {"channel": 5, "state": "MyRootTopic/Status/Test5", "command": "MyRootTopic/Command/Test5"}, {"channel": 6, "state": "MyRootTopic/Status/Test6", "command": "MyRootTopic/Command/Test6"}]},
-{"node": 22, "group": 22, "relays": [ {"channel": 1, "state": "MyRootTopic/Status/TestA", "command": "MyRootTopic/Command/TestA"}, {"channel": 2, "state": "MyRootTopic/Status/TestB", "command": "MyRootTopic/Command/TestB"}, {"channel": 3, "state": "MyRootTopic/Status/TestC", "command": "MyRootTopic/Command/TestC"}, {"channel": 4, "state": "MyRootTopic/Status/TestD", "command": "MyRootTopic/Command/TestD"}, {"channel": 5, "state": "MyRootTopic/Status/TestE", "command": "MyRootTopic/Command/TestE"}, {"channel": 6, "state": "MyRootTopic/Status/TestF", "command": "MyRootTopic/Command/TestF"}]}
+{"node": 1, "group": 2, "relays": [ {"channel": 1, "state": "MyRootTopic/Status/Test1", "command": "MyRootTopic/Command/Test1"}, {"channel": 2, "state": "MyRootTopic/Status/Test2", "command": "MyRootTopic/Command/Test2"}, {"channel": 3, "state": "MyRootTopic/Status/Test3", "command": "MyRootTopic/Command/Test3"}, {"channel": 4, "state": "MyRootTopic/Status/Test4", "command": "MyRootTopic/Command/Test4"}, {"channel": 5, "state": "MyRootTopic/Status/Test5", "command": "MyRootTopic/Command/Test5"}, {"channel": 6, "state": "MyRootTopic/Status/Test6", "command": "MyRootTopic/Command/Test6"}]},
+{"node": 2, "group": 2, "relays": [ {"channel": 1, "state": "MyRootTopic/Status/TestA", "command": "MyRootTopic/Command/TestA"}, {"channel": 2, "state": "MyRootTopic/Status/TestB", "command": "MyRootTopic/Command/TestB"}, {"channel": 3, "state": "MyRootTopic/Status/TestC", "command": "MyRootTopic/Command/TestC"}, {"channel": 4, "state": "MyRootTopic/Status/TestD", "command": "MyRootTopic/Command/TestD"}, {"channel": 5, "state": "MyRootTopic/Status/TestE", "command": "MyRootTopic/Command/TestE"}, {"channel": 6, "state": "MyRootTopic/Status/TestF", "command": "MyRootTopic/Command/TestF"}]}
 ],
 "HAPCANButtons":
 [
-{"node": 11, "group": 100, "buttons":[{"channel": 1, "state": "MyRootTopic/Status/ButtonTest1", "command": ""}, {"channel": 2, "state": "MyRootTopic/Status/ButtonTest2", "command": ""}, {"channel": 3, "state": "MyRootTopic/Status/ButtonTest3", "command": ""}, {"channel": 4, "state": "MyRootTopic/Status/ButtonTest4", "command": ""}, {"channel": 5, "state": "MyRootTopic/Status/ButtonTest5", "command": ""}, {"channel": 6, "state": "MyRootTopic/Status/ButtonTest6", "command": ""}, {"channel": 7, "state": "MyRootTopic/Status/ButtonTest7", "command": ""}, {"channel": 8, "state": "MyRootTopic/Status/ButtonTest8", "command": ""}, {"channel": 9, "state": "MyRootTopic/Status/ButtonTest9", "command": ""}, {"channel": 10, "state": "MyRootTopic/Status/ButtonTest10", "command": ""}, {"channel": 11, "state": "MyRootTopic/Status/ButtonTest11", "command": ""}, {"channel": 12, "state": "MyRootTopic/Status/ButtonTest12", "command": ""}, {"channel": 13, "state": "MyRootTopic/Status/ButtonTest", "command": ""}, {"channel": 14, "state": "MyRootTopic/Status/LEDTest", "command": "MyRootTopic/Command/LEDTest/set"}], "temperature":{"state": "MyRootTopic/Status/Temperature1"}, "thermostat":{"state": "MyRootTopic/Status/Thermostat1", "command": "MyRootTopic/Command/Thermostat1/set"}, "temperatureController":{"state": "MyRootTopic/Status/TControl1", "command": "MyRootTopic/Command/TControl1/set"}, "temperatureError":{"state": "MyRootTopic/Status/TError1"}},
-{"node": 3, "group": 3, "buttons":[{"channel": 1, "state": "MyRootTopic/Status/BT1", "command": ""}, {"channel": 2, "state": "MyRootTopic/Status/BT2", "command": ""}, {"channel": 3, "state": "MyRootTopic/Status/BT3", "command": ""}, {"channel": 4, "state": "MyRootTopic/Status/BT4", "command": ""}, {"channel": 5, "state": "MyRootTopic/Status/BT5", "command": ""}, {"channel": 6, "state": "MyRootTopic/Status/BT6", "command": ""}, {"channel": 7, "state": "MyRootTopic/Status/BT7", "command": ""}, {"channel": 8, "state": "MyRootTopic/Status/BT8", "command": ""}]}
+{"node": 1, "group": 1, "buttons":[{"channel": 1, "state": "MyRootTopic/Status/ButtonTest1", "command": ""}, {"channel": 2, "state": "MyRootTopic/Status/ButtonTest2", "command": ""}, {"channel": 3, "state": "MyRootTopic/Status/ButtonTest3", "command": ""}, {"channel": 4, "state": "MyRootTopic/Status/ButtonTest4", "command": ""}, {"channel": 5, "state": "MyRootTopic/Status/ButtonTest5", "command": ""}, {"channel": 6, "state": "MyRootTopic/Status/ButtonTest6", "command": ""}, {"channel": 7, "state": "MyRootTopic/Status/ButtonTest7", "command": ""}, {"channel": 8, "state": "MyRootTopic/Status/ButtonTest8", "command": ""}, {"channel": 9, "state": "MyRootTopic/Status/ButtonTest9", "command": ""}, {"channel": 10, "state": "MyRootTopic/Status/ButtonTest10", "command": ""}, {"channel": 11, "state": "MyRootTopic/Status/ButtonTest11", "command": ""}, {"channel": 12, "state": "MyRootTopic/Status/ButtonTest12", "command": ""}, {"channel": 13, "state": "MyRootTopic/Status/ButtonTest", "command": ""}, {"channel": 14, "state": "MyRootTopic/Status/LEDTest", "command": "MyRootTopic/Command/LEDTest/set"}], "temperature":{"state": "MyRootTopic/Status/Temperature1"}, "thermostat":{"state": "MyRootTopic/Status/Thermostat1", "command": "MyRootTopic/Command/Thermostat1/set"}, "temperatureController":{"state": "MyRootTopic/Status/TControl1", "command": "MyRootTopic/Command/TControl1/set"}, "temperatureError":{"state": "MyRootTopic/Status/TError1"}},
+{"node": 2, "group": 1, "buttons":[{"channel": 1, "state": "MyRootTopic/Status/BT1", "command": ""}, {"channel": 2, "state": "MyRootTopic/Status/BT2", "command": ""}, {"channel": 3, "state": "MyRootTopic/Status/BT3", "command": ""}, {"channel": 4, "state": "MyRootTopic/Status/BT4", "command": ""}, {"channel": 5, "state": "MyRootTopic/Status/BT5", "command": ""}, {"channel": 6, "state": "MyRootTopic/Status/BT6", "command": ""}, {"channel": 7, "state": "MyRootTopic/Status/BT7", "command": ""}, {"channel": 8, "state": "MyRootTopic/Status/BT8", "command": ""}]}
 ],
 "HAPCANRGBs":
 [
-{"node":45, "group":1, "isRGB":false, "rgb":[{"channel":1, "state":"MyRootTopic/Status/PWM1", "command":"MyRootTopic/Command/PWM1/set"}, {"channel":2, "state":"MyRootTopic/Status/PWM2", "command":"MyRootTopic/Command/PWM2/set"}, {"channel":3, "state":"MyRootTopic/Status/PWM3", "command":"MyRootTopic/Command/PWM3/set"}]},
-{"node":4, "group":1, "isRGB":true, "rgb":[{"state":"MyRootTopic/Status/RGB1", "command":"MyRootTopic/Command/RGB1/set"}]}
+{"node":1, "group":8, "isRGB":false, "rgb":[{"channel":1, "state":"MyRootTopic/Status/PWM1", "command":"MyRootTopic/Command/PWM1/set"}, {"channel":2, "state":"MyRootTopic/Status/PWM2", "command":"MyRootTopic/Command/PWM2/set"}, {"channel":3, "state":"MyRootTopic/Status/PWM3", "command":"MyRootTopic/Command/PWM3/set"}]},
+{"node":2, "group":8, "isRGB":true, "rgb":[{"state":"MyRootTopic/Status/RGB1", "command":"MyRootTopic/Command/RGB1/set"}]}
 ],
 "RGBWs":
 [
-{"node":2, "group":1, "isRGBW":false, "isRGB":true, "rgb":[{"state":"MyRootTopic/Status/RGB1", "command":"MyRootTopic/Command/RGB1/set"}], "rgbw":[{"channel": 4, "state":"MyRootTopic/Status/RGBW4", "command":"MyRootTopic/Command/RGBW4/set"}]},
-{"node":26,"group":1,"isRGBW":false,"isRGB":false,"rgbw":[{"channel":1,"state":"MyRootTopic/Status/RGBW1","command":"MyRootTopic/Command/RGBW1/set"},{"channel":2,"state":"MyRootTopic/Status/RGBW2","command":"MyRootTopic/Command/RGBW2/set"},{"channel":3,"state":"MyRootTopic/Status/RGBW3","command":"MyRootTopic/Command/RGBW3/set"},{"channel":4,"state":"MyRootTopic/Status/RGBW4","command":"MyRootTopic/Command/RGBW4/set"}]},
-{"node":27, "group":1, "isRGBW":true, "isRGB":false, "rgbw":[{"state":"MyRootTopic/Status/RGBW", "command":"MyRootTopic/Command/RGBW/set"}]}
+{"node":3, "group":8, "isRGBW":false, "isRGB":true, "rgb":[{"state":"MyRootTopic/Status/RGB1", "command":"MyRootTopic/Command/RGB1/set"}], "rgbw":[{"channel": 4, "state":"MyRootTopic/Status/RGBW4", "command":"MyRootTopic/Command/RGBW4/set"}]},
+{"node":4, "group":8, "isRGBW":false, "isRGB":false, "rgbw":[{"channel":1,"state":"MyRootTopic/Status/RGBW1","command":"MyRootTopic/Command/RGBW1/set"},{"channel":2,"state":"MyRootTopic/Status/RGBW2","command":"MyRootTopic/Command/RGBW2/set"},{"channel":3,"state":"MyRootTopic/Status/RGBW3","command":"MyRootTopic/Command/RGBW3/set"},{"channel":4,"state":"MyRootTopic/Status/RGBW4","command":"MyRootTopic/Command/RGBW4/set"}]},
+{"node":5, "group":8, "isRGBW":true, "isRGB":false, "rgbw":[{"state":"MyRootTopic/Status/RGBW", "command":"MyRootTopic/Command/RGBW/set"}]}
 ],
 "TIMs":
 [
-{"node": 1, "group": 1, "temperature": [{"channel": 1, "temperatureState": "MyRootTopic/Status/TempSensor1TempState", "thermostatState": "MyRootTopic/Status/TempSensor1ThermState", "thermostatCommand": "MyRootTopic/Command/TempSensor1ThermComm", "errorState": "MyRootTopic/Status/TempSensor1ErrState"},{"channel": 2, "temperatureState": "MyRootTopic/Status/TempSensor2TempState", "thermostatState": "MyRootTopic/Status/TempSensor2ThermState", "thermostatCommand": "MyRootTopic/Command/TempSensor2ThermComm", "errorState": "MyRootTopic/Status/TempSensor2ErrState"},{"channel": 3, "temperatureState": "MyRootTopic/Status/TempSensor3TempState", "thermostatState": "MyRootTopic/Status/TempSensor3ThermState", "thermostatCommand": "MyRootTopic/Command/TempSensor3ThermComm", "errorState": "MyRootTopic/Status/TempSensor3ErrState"},{"channel": 4, "temperatureState": "MyRootTopic/Status/TempSensor4TempState", "thermostatState": "MyRootTopic/Status/TempSensor4ThermState", "thermostatCommand": "MyRootTopic/Command/TempSensor4ThermComm", "errorState": "MyRootTopic/Status/TempSensor4ErrState"}],"irCommand": "MyRootTopic/Command/IRCommand"}
+{"node": 1, "group": 4, "temperature": [{"channel": 1, "temperatureState": "MyRootTopic/Status/TempSensor1TempState", "thermostatState": "MyRootTopic/Status/TempSensor1ThermState", "thermostatCommand": "MyRootTopic/Command/TempSensor1ThermComm", "errorState": "MyRootTopic/Status/TempSensor1ErrState"},{"channel": 2, "temperatureState": "MyRootTopic/Status/TempSensor2TempState", "thermostatState": "MyRootTopic/Status/TempSensor2ThermState", "thermostatCommand": "MyRootTopic/Command/TempSensor2ThermComm", "errorState": "MyRootTopic/Status/TempSensor2ErrState"},{"channel": 3, "temperatureState": "MyRootTopic/Status/TempSensor3TempState", "thermostatState": "MyRootTopic/Status/TempSensor3ThermState", "thermostatCommand": "MyRootTopic/Command/TempSensor3ThermComm", "errorState": "MyRootTopic/Status/TempSensor3ErrState"},{"channel": 4, "temperatureState": "MyRootTopic/Status/TempSensor4TempState", "thermostatState": "MyRootTopic/Status/TempSensor4ThermState", "thermostatCommand": "MyRootTopic/Command/TempSensor4ThermComm", "errorState": "MyRootTopic/Status/TempSensor4ErrState"}],"irCommand": "MyRootTopic/Command/IRCommand"}
 ]
 }

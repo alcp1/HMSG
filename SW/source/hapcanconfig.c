@@ -6,6 +6,11 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 20/Oct/2024 |                               | ALCP             //
+// - config.json: remove field rawHapcanSubTopic                              //
+// - config.json: add fields rawHapcanSubTopics, rawHapcanPubAll,             //
+// rawHapcanPubModules                                                        //
+//----------------------------------------------------------------------------//
 
 /*
  * ----------------------------------------------------------------------------
@@ -50,8 +55,12 @@ static int g_computerID1 = HAPCAN_DEFAULT_CIDx;
 static int g_computerID2 = HAPCAN_DEFAULT_CIDx;
 // MQTT <--> Hapcan Raw data config
 static bool enableRawHapcan = false;
+static bool rawHapcanPubAll = false;
 static char *rawHapcanPubTopic = NULL;
-static char *rawHapcanSubTopic = NULL;
+static int n_rawSubtopics = 0;
+static char **rawHapcanSubTopics = NULL;
+static int n_rawPubModules = 0;
+rawModuleID_t *rawModulesPubList = NULL;
 // MQTT <--> Hapcan System Messages config
 static bool enableHapcanStatus;
 static char *statusPubTopic = NULL;
@@ -74,11 +83,35 @@ static void getHAPCANConfiguration(void)
     int c_ID1;
     int c_ID2;
     bool valid;
-    // first free all values to default in case it is a reload
-    free(rawHapcanPubTopic);
-    free(rawHapcanSubTopic);
+    int i;
+    int n;
+    int node;
+    int group;
+    //--------------------------------------------------------------------------
+    // Init - Free all values to default in case it is a reload
+    //     REMARK: temporary save n to prevent simultaneous read while config 
+    //     is being loaded
+    //-------------------------------------------------------------------------
+    // RAW
+    enableRawHapcan = false;
+    rawHapcanPubAll = false;
+    n = n_rawSubtopics;
+    n_rawSubtopics = 0;
+    for (i = 0; i < n; i++)
+    {
+        free(rawHapcanSubTopics[i]);
+    }
+    free(rawHapcanSubTopics);
+    n_rawPubModules = 0;
+    free(rawModulesPubList);
+    free(rawHapcanPubTopic); 
+    // STATUS   
+    enableHapcanStatus = false;
     free(statusPubTopic);
     free(statusSubTopic);
+    // GATEWAY
+    enableGateway = false;
+
     //-----------------------------------
     // ID for direct control frame
     //-----------------------------------
@@ -113,17 +146,65 @@ static void getHAPCANConfiguration(void)
     {            
         enableRawHapcan = false;
     }
+    check = config_getBool(CONFIG_GENERAL_SETTINGS_LEVEL, 0, 
+            "rawHapcanPubAll", 0, NULL, &rawHapcanPubAll);      
+    if(check != EXIT_SUCCESS)
+    {            
+        rawHapcanPubAll = false;
+    }    
     check = config_getString(CONFIG_GENERAL_SETTINGS_LEVEL, 0, 
         "rawHapcanPubTopic", 0, NULL, &rawHapcanPubTopic);      
     if(check != EXIT_SUCCESS)
     {            
         rawHapcanPubTopic = NULL;
     }
-    check = config_getString(CONFIG_GENERAL_SETTINGS_LEVEL, 0, 
-            "rawHapcanSubTopic", 0, NULL, &rawHapcanSubTopic);      
-    if(check != EXIT_SUCCESS)
-    {            
-        rawHapcanSubTopic = NULL;
+    check = config_getStringArray(CONFIG_GENERAL_SETTINGS_LEVEL,
+            "rawHapcanSubTopics", &n_rawSubtopics, &rawHapcanSubTopics);
+    if (check != EXIT_SUCCESS) 
+    {
+        rawHapcanSubTopics = NULL;
+        n_rawSubtopics = 0;
+    }
+    //------------------------------------------------
+    // Get the number of configured RAW Modules
+    //------------------------------------------------
+    check = jh_getJArrayElementsObj(CONFIG_GENERAL_SETTINGS_LEVEL, 
+        "rawHapcanPubModules", 0, NULL, JSON_DEPTH_LEVEL, &n_rawPubModules);
+    if(check == JSON_OK)
+    {
+        rawModulesPubList = (rawModuleID_t*)malloc(
+            sizeof(*rawModulesPubList)*n_rawPubModules);
+        valid = true;
+        for(i = 0; i < n_rawPubModules; i++)
+        {            
+            // Node
+            check = jh_getJFieldIntObj(CONFIG_GENERAL_SETTINGS_LEVEL, 
+                "rawHapcanPubModules", i, "node", 0, NULL, &node);
+            valid = valid && (check == JSON_OK);
+            // Group
+            check = jh_getJFieldIntObj(CONFIG_GENERAL_SETTINGS_LEVEL, 
+                "rawHapcanPubModules", i, "group", 0, NULL, &group);
+            valid = valid && (check == JSON_OK);
+            valid = valid && (node >= 0) && (node <= 255);
+            valid = valid && (group >= 0) && (group <= 255);
+            if(valid)
+            {
+                rawModulesPubList[i].node = node;
+                rawModulesPubList[i].group = group;
+            }
+            #ifdef DEBUG_HAPCAN_CONFIG_ERRORS
+            if(!valid)
+            {
+                n_rawPubModules = 0;
+                debug_print("getHAPCANConfiguration: Raw Pub List Error!\n");
+            }
+            #endif
+        }
+    }
+    else
+    {
+        n_rawPubModules = 0;
+        rawModulesPubList = NULL;
     }
     //-----------------------------------
     // MQTT <--> Hapcan System Messages config
@@ -191,19 +272,7 @@ int hconfig_getConfigStr(hapcanConfigID config, char **str)
                 *str = malloc(len + 1);
                 strcpy(*str, rawHapcanPubTopic);
             }
-            break;
-        case HAPCAN_CONFIG_RAW_SUB:
-            if(rawHapcanSubTopic == NULL)
-            {            
-                *str = NULL;
-            }
-            else
-            {
-                len = strlen(rawHapcanSubTopic);
-                *str = malloc(len + 1);
-                strcpy(*str, rawHapcanSubTopic);
-            }
-            break;
+            break;        
         case HAPCAN_CONFIG_STATUS_PUB:
             if(statusPubTopic == NULL)
             {            
@@ -237,6 +306,36 @@ int hconfig_getConfigStr(hapcanConfigID config, char **str)
 }
 
 /**
+ * Return the specified string configuration with a specified index position
+ */
+int hconfig_getConfigStrN(hapcanConfigID config, uint16_t i_field, char **str)
+{
+    int ret = EXIT_SUCCESS;
+    unsigned int len;
+    switch(config)
+    {
+        case HAPCAN_CONFIG_RAW_SUBS:
+            if(i_field >= 0 && i_field < n_rawSubtopics && n_rawSubtopics > 0)
+            {                
+                len = strlen(rawHapcanSubTopics[i_field]);
+                *str = malloc(len + 1);
+                strcpy(*str, rawHapcanSubTopics[i_field]);
+            }
+            else
+            {
+                ret = EXIT_FAILURE;
+                *str = NULL;
+            }
+            break;
+        default:
+            ret = EXIT_FAILURE;
+            *str = NULL;
+            break;
+    }
+    return ret;
+}
+
+/**
  * Return the specified boolean configuration
  */
 int hconfig_getConfigBool(hapcanConfigID config, bool *value)
@@ -246,6 +345,9 @@ int hconfig_getConfigBool(hapcanConfigID config, bool *value)
     {
         case HAPCAN_CONFIG_ENABLE_RAW:
             *value = enableRawHapcan;
+            break;
+        case HAPCAN_CONFIG_PUB_ALL:
+            *value = rawHapcanPubAll;
             break;
         case HAPCAN_CONFIG_ENABLE_GATEWAY:
             *value = enableGateway;
@@ -275,8 +377,45 @@ int hconfig_getConfigInt(hapcanConfigID config, int *value)
         case HAPCAN_CONFIG_COMPUTER_ID2:
             *value = g_computerID2;
             break;
+        case HAPCAN_CONFIG_N_RAW_SUBS:
+            *value = n_rawSubtopics;
+            break;
+        case HAPCAN_CONFIG_N_PUB_MODULES:
+            *value = n_rawPubModules;
+            break;
         default:
             *value = 0;
+            ret = EXIT_FAILURE;
+            break;
+    }
+    return ret;
+}
+
+/**
+ * Return the specified module ID configuration on the n-th index of the field          
+ */
+int hconfig_getConfigID(hapcanConfigID config, uint16_t i_field, 
+    rawModuleID_t *id)
+{
+    int ret = EXIT_SUCCESS;
+    switch(config)
+    {
+        case HAPCAN_CONFIG_PUB_MODULES:
+            if(i_field >= 0 && i_field < n_rawPubModules && n_rawPubModules > 0)
+            {
+                id->group = rawModulesPubList[i_field].group;
+                id->node = rawModulesPubList[i_field].node;
+            }
+            else
+            {
+                id->group = 0;
+                id->node = 0;
+                ret = EXIT_FAILURE;
+            }
+            break;
+        default:
+            id->group = 0;
+            id->node = 0;
             ret = EXIT_FAILURE;
             break;
     }

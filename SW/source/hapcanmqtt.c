@@ -6,6 +6,11 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.01     | 20/Oct/2024 |                               | ALCP             //
+// - config.json: remove field rawHapcanSubTopic                              //
+// - config.json: add fields rawHapcanSubTopics, rawHapcanPubAll,             //
+// rawHapcanPubModules                                                        //
+//----------------------------------------------------------------------------//
 
 /*
 * Includes
@@ -160,18 +165,40 @@ static int getHAPCANFromRawMQTT(void* payload, int payloadlen,
  */
 static int checkRawSubTopic(char *str_command_topic)
 {
-    int ret = HAPCAN_NO_RESPONSE; // Set to NO_RESPONSE unless OK
+    int ret = HAPCAN_NO_RESPONSE; // Set to NO_RESPONSE unless OK    
+    int check;
+    int nRawSubs;    
+    int i;
     char *str = NULL;
-    // GET TOPIC
-    ret = hconfig_getConfigStr(HAPCAN_CONFIG_RAW_SUB, &str);
-    if((ret == EXIT_SUCCESS) && (str != NULL))
-    {            
-        if(aux_compareStrings(str_command_topic, str))
-        {
-            ret = HAPCAN_CAN_RESPONSE;
-        }
+    // Get number of Sub Topics to be checked
+    check = hconfig_getConfigInt(HAPCAN_CONFIG_N_RAW_SUBS, &nRawSubs);
+    if(check != EXIT_SUCCESS)
+    {
+        nRawSubs = 0;
     }
-    free(str);
+    for(i = 0; i < nRawSubs; i++)
+    {
+        // Get configured sub topic
+        check = hconfig_getConfigStrN(HAPCAN_CONFIG_RAW_SUBS, i, &str);
+        if( (check == EXIT_SUCCESS) && (str != NULL) )
+        {
+            // Compare configured sub topic
+            if(aux_compareStrings(str_command_topic, str))
+            {
+                // Topic match - stop checking
+                ret = HAPCAN_CAN_RESPONSE;
+                free(str);
+                break;
+            }
+        }
+        else
+        {
+            // Error - exit comparison
+            ret = check;
+            break;
+        }
+        free(str);
+    }
     return ret;
 }
 
@@ -199,6 +226,11 @@ int hm_setRawResponseFromMQTT(char* topic, void* payload, int payloadlen,
 int hm_setRawResponseFromCAN(hapcanCANData* hapcanData, char** topic, 
         void** payload, int *payloadlen)
 {        
+    bool valid;
+    bool enable;
+    int nPubModules;
+    int i;
+    rawModuleID_t id;
     unsigned int size;
     int check;
     int ret;
@@ -208,9 +240,50 @@ int hm_setRawResponseFromCAN(hapcanCANData* hapcanData, char** topic,
     // Init returns
     *topic = NULL;
     *payload = NULL;
-    *payloadlen = 0;    
-    // Only for application messages
-    if(hapcanData->frametype > HAPCAN_START_NORMAL_MESSAGES)
+    *payloadlen = 0; 
+    //-------------------------------------------
+    // Initial configuration check
+    //-------------------------------------------
+    valid = true;
+    check = hconfig_getConfigBool(HAPCAN_CONFIG_PUB_ALL, &enable);
+    if(check == EXIT_FAILURE)
+    {
+       enable = false;
+    }
+    check = hconfig_getConfigInt(HAPCAN_CONFIG_N_PUB_MODULES, &nPubModules);
+    if(check != EXIT_SUCCESS)
+    {
+        nPubModules = 0;
+    }
+    if(!enable)
+    {
+        for(i = 0; i < nPubModules; i++)
+        {
+            // Read configured ID
+            check = hconfig_getConfigID(HAPCAN_CONFIG_PUB_MODULES, i, &id);
+            if(check != EXIT_SUCCESS)
+            {
+                valid = false;
+                break;
+            }
+            // Check configured ID
+            enable = true;
+            enable = enable && (id.group == hapcanData->group);
+            enable = enable && (id.node == hapcanData->module);
+            if(enable)
+            {
+                // Match found
+                break;
+            }
+        }
+    }
+    valid = valid && enable;
+    // Application messagens only (Frame Type > 0x200)
+    valid = valid && hapcanData->frametype > HAPCAN_START_NORMAL_MESSAGES;
+    //-------------------------------------------    
+    // Set MQTT message if it is OK to respond
+    //-------------------------------------------
+    if(valid)
     {
         // GET TOPIC
         check = hconfig_getConfigStr(HAPCAN_CONFIG_RAW_PUB, &str);      

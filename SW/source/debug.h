@@ -12,6 +12,9 @@
 //  1.02     | 27/Jun/2023 |                               | ALCP             //
 // - Add Build Version Debug                                                  //
 //----------------------------------------------------------------------------//
+//  1.03     | 22/Oct/2024 |                               | ALCP             //
+// - Add HAPCAN CONFIG Error debug flag                                       //
+//----------------------------------------------------------------------------//
 
 #ifndef DEBUG_H
 //#define DEBUG_H
@@ -36,7 +39,7 @@ extern "C" {
 #define DEBUG_MQTT_ERRORS
 #define DEBUG_MQTT_CONNECTED
 #define DEBUG_MQTT_PUBLISH_TIMEOUT
-//#define DEBUG_MQTT_CONNECT
+//#define DEBUG_MQTT_CONNECT // Disable for production
 //#define DEBUG_MQTT_RECEIVED // Disable for production
 //#define DEBUG_MQTT_SENT // Disable for production
     
@@ -84,6 +87,7 @@ extern "C" {
 #define DEBUG_HAPCAN_TEMPERATURE_ERRORS
 #define DEBUG_HAPCAN_RGB_ERRORS
 #define DEBUG_HAPCAN_SYSTEM_ERRORS
+#define DEBUG_HAPCAN_CONFIG_ERRORS
 #define DEBUG_RGBW_ERRORS
 #define DEBUG_TIM_ERRORS
 //#define DEBUG_RGBW_FULL // Disable for production
