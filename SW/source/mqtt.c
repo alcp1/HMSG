@@ -10,6 +10,9 @@
 // - Change use of MQTTClient_disconnect and MQTTClient_destroy to prevent    //
 // segmentation fault.                                                        //
 //----------------------------------------------------------------------------//
+//  1.02     | 26/Oct/2024 |                               | ALCP             //
+// - Updtates to handle connecion lost events without destroying the client   //
+//----------------------------------------------------------------------------//
 
 /*
 * Includes
@@ -99,7 +102,7 @@ void mqtt_onConnLost(void *context, char *cause)
     debug_print("- Cause: %s\n", cause);
     #endif
     // Set state
-    setMQTTStateLocked(MQTT_STATE_OFF);
+    setMQTTStateLocked(MQTT_STATE_DISCONNECTED);
 }
 
 /* MQTT Callbak - On Message Delivered (only for QOS > 0) */
@@ -133,6 +136,7 @@ int mqtt_getState(void)
 /* MQTT Initialization */
 int mqtt_init(void) 
 {
+    int state;
     int check;
     int ret;
     char *server = NULL;
@@ -141,126 +145,149 @@ int mqtt_init(void)
     int n_sub_topics = 0;
     int i;
     bool ok;
-
-    // Set state to OFF
-    setMQTTStateLocked(MQTT_STATE_OFF);
-    //---------------------------------
-    // READ CONFIGURATION
-    //---------------------------------
-    check = config_getString(CONFIG_GENERAL_SETTINGS_LEVEL, 0,
-            "mqttBroker", 0, NULL, &server);
-    if (check != EXIT_SUCCESS) 
+    // Check connection status    
+    ret = EXIT_FAILURE;
+    // Check connection status
+    state = getMQTTStateLocked();
+    if(state == MQTT_STATE_OFF)
     {
+        // Set state to OFF
+        setMQTTStateLocked(MQTT_STATE_OFF);
+        //---------------------------------
+        // READ CONFIGURATION FOR INIT
+        //---------------------------------
+        check = config_getString(CONFIG_GENERAL_SETTINGS_LEVEL, 0,
+                "mqttBroker", 0, NULL, &server);
+        if (check != EXIT_SUCCESS) 
+        {
+            server = NULL;
+        }
+        check = config_getString(CONFIG_GENERAL_SETTINGS_LEVEL, 0,
+                "mqttClientID", 0, NULL, &clientID);
+        if (check != EXIT_SUCCESS) 
+        {
+            clientID = NULL;
+        }        
+        //---------------------------------
+        // VALIDATE CONFIGURATION
+        //---------------------------------
+        if((server == NULL) || (clientID == NULL)) 
+        {
+            // Free server
+            if (server != NULL) 
+            {
+                free(server);
+            }
+            // Free client ID
+            if (clientID != NULL) 
+            {
+                free(clientID);
+            }
+            #if defined(DEBUG_MQTT_CONNECT)
+            debug_print("mqtt_init: Wrong Configuraion\n");
+            #endif
+            return EXIT_FAILURE;
+        }
+        //---------------------------------
+        // MQTT Initialization: options  
+        //---------------------------------
+        check = MQTTClient_create(&client, server, clientID, 
+            MQTTCLIENT_PERSISTENCE_NONE, NULL);
+        free(server);
         server = NULL;
-    }
-    check = config_getString(CONFIG_GENERAL_SETTINGS_LEVEL, 0,
-            "mqttClientID", 0, NULL, &clientID);
-    if (check != EXIT_SUCCESS) 
-    {
+        free(clientID);
         clientID = NULL;
-    }
-    check = config_getStringArray(CONFIG_GENERAL_SETTINGS_LEVEL,
-            "subscribeTopics", &n_sub_topics, &sub_topics);
-    if (check != EXIT_SUCCESS) 
-    {
-        sub_topics = NULL;
-        n_sub_topics = 0;
-    }
-    //---------------------------------
-    // VALIDATE CONFIGURATION
-    //---------------------------------
-    if((server == NULL) || (clientID == NULL)) 
-    {
-        // Free Sub Topics
-        for (i = 0; i < n_sub_topics; i++)
+        if(check == MQTTCLIENT_SUCCESS)
         {
-            free(sub_topics[i]);
-        }
-        free(sub_topics);
-        // Free server
-        if (server != NULL) 
-        {
-            free(server);
-        }
-        // Free client ID
-        if (clientID != NULL) 
-        {
-            free(clientID);
-        }
-        #if defined(DEBUG_MQTT_CONNECT)
-        debug_print("mqtt_init: Wrong Configuraion\n");
-        #endif
-        return EXIT_FAILURE;
-    }
-    //---------------------------------
-    // MQTT Initialization: options  
-    //---------------------------------
-    MQTTClient_create(&client, server, clientID, MQTTCLIENT_PERSISTENCE_NONE, 
-            NULL);
-    free(server);
-    server = NULL;
-    free(clientID);
-    clientID = NULL;
-    MQTTClient_setCallbacks(client, NULL, mqtt_onConnLost, mqtt_onMsgArrvd, 
-            mqtt_onDelivered);  
-    //---------------------------------
-    // CONNECT to Broker and subscribe
-    //---------------------------------
-    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    conn_opts.keepAliveInterval = 30;
-    conn_opts.cleansession = 1;
-    conn_opts.connectTimeout = 10;
-    check = MQTTClient_connect(client, &conn_opts);
-    if (check != MQTTCLIENT_SUCCESS) 
-    {
-        #if defined(DEBUG_MQTT_CONNECT)
-        debug_print("Failed to connect to MQTT Broker. Error: %d\n", check);
-        #endif
-        ret = EXIT_FAILURE;
-        // Free Sub Topics - server and client ID are already free
-        for (i = 0; i < n_sub_topics; i++)
-        {
-            free(sub_topics[i]);
-        }
-        free(sub_topics);        
-        // Close and set state
-        mqtt_close();
-    } 
-    else 
-    {        
-        //---------------------------------
-        // Subscribe to topics and free
-        //---------------------------------
-        ok = true;
-        for (i = 0; i < n_sub_topics; i++)
-        {
-            check = MQTTClient_subscribe(client, sub_topics[i], 0);
-            if(check != MQTTCLIENT_SUCCESS)
-            {                
-                #ifdef DEBUG_MQTT_CONNECT
-                debug_print("Failed to connect subscribe to topic: %s\n", 
-                        sub_topics[i]);
-                #endif
-                ok = false;
-            }            
-            free(sub_topics[i]);
-        }
-        free(sub_topics);
-        if(!ok)
-        {
-            ret = EXIT_FAILURE;
-            // Close and set state
-            mqtt_close();
+            check = MQTTClient_setCallbacks(client, NULL, mqtt_onConnLost, 
+                mqtt_onMsgArrvd, mqtt_onDelivered);
+            if(check == MQTTCLIENT_SUCCESS)
+            {
+                // Set state
+                setMQTTStateLocked(MQTT_STATE_DISCONNECTED);
+            }
+            else
+            {
+                return EXIT_FAILURE;
+            }
         }
         else
         {
-            ret = EXIT_SUCCESS;
-            // Set State
-            setMQTTStateLocked(MQTT_STATE_ON);   
-            #if defined(DEBUG_MQTT_CONNECT) || defined(DEBUG_MQTT_CONNECTED)
-            debug_print("mqtt_init: Connected to Broker!\n");
-            #endif        
-        }        
+            return EXIT_FAILURE;
+        }
+    }
+    state = getMQTTStateLocked();
+    if(state == MQTT_STATE_DISCONNECTED)
+    {
+        //---------------------------------
+        // READ CONFIGURATION FOR CONNECT
+        //---------------------------------
+        check = config_getStringArray(CONFIG_GENERAL_SETTINGS_LEVEL,
+                "subscribeTopics", &n_sub_topics, &sub_topics);
+        if (check != EXIT_SUCCESS) 
+        {
+            sub_topics = NULL;
+            n_sub_topics = 0;
+        }
+        //---------------------------------
+        // CONNECT to Broker and subscribe
+        //---------------------------------
+        MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+        conn_opts.keepAliveInterval = 30;
+        conn_opts.cleansession = 1;
+        conn_opts.connectTimeout = 10;
+        check = MQTTClient_connect(client, &conn_opts);
+        if (check != MQTTCLIENT_SUCCESS) 
+        {
+            #if defined(DEBUG_MQTT_CONNECT)
+            debug_print("Failed to connect to MQTT Broker. Error: %d\n", check);
+            #endif
+            ret = EXIT_FAILURE;
+            // Free Sub Topics - server and client ID are already free
+            for (i = 0; i < n_sub_topics; i++)
+            {
+                free(sub_topics[i]);
+            }
+            free(sub_topics);        
+            // Close and set state
+            mqtt_close();
+        } 
+        else 
+        {        
+            //---------------------------------
+            // Subscribe to topics and free
+            //---------------------------------
+            ok = true;
+            for (i = 0; i < n_sub_topics; i++)
+            {
+                check = MQTTClient_subscribe(client, sub_topics[i], 0);
+                if(check != MQTTCLIENT_SUCCESS)
+                {                
+                    #ifdef DEBUG_MQTT_CONNECT
+                    debug_print("Failed to connect subscribe to topic: %s\n", 
+                            sub_topics[i]);
+                    #endif
+                    ok = false;
+                }            
+                free(sub_topics[i]);
+            }
+            free(sub_topics);
+            if(!ok)
+            {
+                ret = EXIT_FAILURE;
+                // Close and set state
+                mqtt_close();
+            }
+            else
+            {
+                ret = EXIT_SUCCESS;
+                // Set State
+                setMQTTStateLocked(MQTT_STATE_ON);   
+                #if defined(DEBUG_MQTT_CONNECT) || defined(DEBUG_MQTT_CONNECTED)
+                debug_print("mqtt_init: Connected to Broker!\n");
+                #endif        
+            }        
+        }
     }
     /* Return */
     return ret;

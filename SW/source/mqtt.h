@@ -6,6 +6,9 @@
 //  1.00     | 10/Dec/2021 |                               | ALCP             //
 // - First version                                                            //
 //----------------------------------------------------------------------------//
+//  1.02     | 26/Oct/2024 |                               | ALCP             //
+// - Updtates to handle connecion lost events without destroying the client   //
+//----------------------------------------------------------------------------//
 
 #ifndef MQTT_H
 #define MQTT_H
@@ -29,9 +32,10 @@ extern "C" {
 #define MQTT_SEND_NO_DATA   -1
 #define MQTT_SEND_WAITING   -2
 #define MQTT_SEND_OK        1
-    
-#define MQTT_STATE_ON       1
-#define MQTT_STATE_OFF      -1
+
+#define MQTT_STATE_ON           1
+#define MQTT_STATE_DISCONNECTED 0
+#define MQTT_STATE_OFF          -1
     
 //----------------------------------------------------------------------------//
 // EXTERNAL FUNCTIONS
