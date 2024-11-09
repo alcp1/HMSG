@@ -13,6 +13,11 @@
 //     - hapcansystem.h version 1.01                                          //
 //     - manager.c version 1.04                                               //
 //----------------------------------------------------------------------------//
+//  1.02     | 09/Nov/2024 |                               | ALCP             //
+// - MQTT updates (new way to handle connecion lost events)                   //
+// - New config file (updates to RAW HAPCAN Frames)                           //
+//----------------------------------------------------------------------------//
+
 
 #ifndef APP_H
 #define APP_H
@@ -29,7 +34,7 @@ extern "C" {
 // EXTERNAL DEFINITIONS
 //----------------------------------------------------------------------------//
 #define APP_SW_MAIN_VERSION  "01"
-#define APP_SW_SUB_VERSION  "11"
+#define APP_SW_SUB_VERSION  "12"
     
 //----------------------------------------------------------------------------//
 // EXTERNAL TYPES
